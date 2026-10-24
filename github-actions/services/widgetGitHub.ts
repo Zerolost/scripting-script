@@ -68,31 +68,8 @@ export function parseTarget(param: string): { owner: string; repo: string; workf
   return { owner: '', repo: '' }
 }
 
-export function getWidgetTargets(): string[] {
-  const list = Storage.get<string>('widget_repos')
-  if (list) {
-    try {
-      const arr = JSON.parse(list)
-      if (Array.isArray(arr)) {
-        return arr.filter((x): x is string => typeof x === 'string' && x.split('/').filter(Boolean).length >= 2)
-      }
-    } catch (_) { }
-  }
-  const legacy = Storage.get<string>('widget_repo')
-  if (legacy) return [legacy]
-  return []
-}
-
-export function setWidgetTargets(targets: string[]) {
-  const clean = targets.filter((t) => t.split('/').filter(Boolean).length >= 2)
-  if (clean.length === 0) {
-    Storage.remove('widget_repos')
-    Storage.remove('widget_repo')
-    return
-  }
-  Storage.set('widget_repos', JSON.stringify(clean))
-  Storage.remove('widget_repo')
-}
+export { getWidgetTargets, setWidgetTargets, createWidgetTargetStore } from './widgetTargetStore'
+export type { WidgetTargetStorage, WidgetTargetStore } from './widgetTargetStore'
 
 export function recordWidgetTrigger(owner: string, repo: string, workflowId: number) {
   Storage.set('widget_last_target', `${owner}/${repo}/${workflowId}`)

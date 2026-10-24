@@ -1,5 +1,6 @@
 import { ScrollView, VStack, HStack, Text, Button, NavigationLink, Widget, useState, type Color } from 'scripting'
 import { glassButtonStyle } from '../design/AllPatternDesign'
+import { AccentNavigationDestination } from '../components/AccentNavigationDestination'
 import { visual } from '../visual.config'
 import { visualGroups, saveVisual, resetVisual } from '../services/visualSettings'
 import { useVisualSettings } from '../hooks/useVisualSettings'
@@ -48,7 +49,7 @@ export function AppearancePage({ group }: { group?: string } = {}) {
         {host ? <Text font="caption" foregroundStyle="secondaryLabel">宿主显式指定的背景、主题色和布局优先于这里的设置。</Text> : null}
         {visual.background.render ? <Text font="caption" foregroundStyle="secondaryLabel">配置文件启用了自绘背景，渐变颜色只在示例中显示。</Text> : null}
         {group || query.trim() ? <AppearanceParameterList key={group ?? 'all'} group={group} query={query} /> :
-          Object.entries(visualGroups).map(([key, title]: [string, string]) => <NavigationLink key={key} destination={<AppearancePage group={key} />} buttonStyle="plain" tint={accent}>
+          Object.entries(visualGroups).map(([key, title]: [string, string]) => <NavigationLink key={key} destination={<AccentNavigationDestination><AppearancePage group={key} tint={accent} /></AccentNavigationDestination>} buttonStyle="plain" tint={accent}>
             <GlassCard><HStack><Text font="body">{title}</Text><Text foregroundStyle={accent}>›</Text></HStack></GlassCard>
           </NavigationLink>)}
         <Text font="caption" foregroundStyle="secondaryLabel">保存值覆盖配置文件；恢复默认后重新使用文件中的值。自绘背景函数需要在配置文件中编写。</Text>

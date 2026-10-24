@@ -1,14 +1,15 @@
+import { RunRecordList } from '../components/RunRecordList'
 import { useAccentColor } from '../hooks/useAccentColor'
 import type { Color } from 'scripting'
 import { visual } from '../visual.config'
-import { Button, HStack, VStack, Image, NavigationLink, Widget, useCallback, useRef, useState } from "scripting"
+import { Button, Widget, useCallback, useMemo, useRef, useState } from "scripting"
 import { GlassList as List, GlassSection as Section } from "../components/GlassList"
 import { MotionText as Text, MotionRow, animateChange, motion, motionTransition } from "../components/Motion"
 import { AppBackground } from "../components/AppBackground"
 import { glassListRow } from "../components/GlassSurface"
-import { recordWidgetTrigger, errorMessage, runStatusIcon, formatShortTime, timeAgoText, RERUN_REFRESH_DELAY_MS, GitHubAPI, useLoadList } from "../services/AppModel"
+import { recordWidgetTrigger, errorMessage, RERUN_REFRESH_DELAY_MS, GitHubAPI, useLoadList } from "../services/AppModel"
 
-import { RunDetailPage } from "./RunDetailPage"
+import { getActionPreferences, filterActionRuns, type ActionPreferences } from '../services/actionPreferences'
 import { useHost, notifyHost, refreshHostWidgets, type GitHubActionsHost } from "../integration/HostAdapter"
 
 export function RunListPage({
@@ -30,6 +31,9 @@ export function RunListPage({
     useCallback(() => api.getWorkflowRuns(owner, repo, workflowId), [api, owner, repo, workflowId])
   )
 
+  const [preferences, setPreferences] = useState<ActionPreferences>(() => getActionPreferences())
+  const [showAll, setShowAll] = useState<boolean>(false)
+  const visibleRuns: typeof runs = useMemo(() => showAll ? runs : filterActionRuns(runs, preferences, defaultBranch), [runs, showAll, preferences, defaultBranch])
   const dispatching = useRef<boolean>(false)
   const [running, setRunning] = useState<boolean>(false)
   const handleRun = useCallback(async () => {
@@ -52,7 +56,11 @@ export function RunListPage({
   }, [api, owner, repo, workflowId, defaultBranch, load, setErrorMsg, host])
 
   return (
-    <List
+    <List tint={accentColor}
+      onAppear={() => {
+        const next: ActionPreferences = getActionPreferences()
+        setPreferences((previous: ActionPreferences): ActionPreferences => previous.runFilter === next.runFilter && previous.branchScope === next.branchScope && previous.widgetOrder === next.widgetOrder ? previous : next)
+      }}
       navigationBarTitleDisplayMode={visual.navigationTitleMode}
       background={<AppBackground />}
       transition={motionTransition}
@@ -67,32 +75,10 @@ export function RunListPage({
     >
       {loading ? <Text {...glassListRow}>{visual.text['加载中...']}</Text> : null}
       {errorMsg ? <Text {...glassListRow} style={{ color: visual.colors['red'] }}>{errorMsg}</Text> : null}
-      <Section header={<Text style={{ fontWeight: '600', color: visual.colors['label'] }}>{visual.text['最近运行 · ']}{runs.length}</Text>}>
-        {runs.map(run => {
-          const icon = runStatusIcon(run)
-          return (
-            <NavigationLink {...glassListRow} tint={accentColor} buttonStyle="plain"
-              key={run.id}
-              destination={<RunDetailPage api={api} owner={owner} repo={repo} run={run} />}
-            >
-              <MotionRow spacing={visual.spacing[8]} alignment="center">
-                <VStack alignment="center" spacing={visual.spacing[0]} frame={{ width: visual.sizes[32], height: visual.sizes[32] }} clipShape={{ type: 'rect', cornerRadius: visual.radii[16], style: 'continuous' }}>
-                  <Image systemName={icon.systemName} frame={{ width: visual.sizes[19], height: visual.sizes[19] }} foregroundStyle={icon.color} />
-                </VStack>
-                <VStack spacing={visual.spacing[5]} alignment="leading" frame={{ maxWidth: 'infinity', alignment: 'leading' }}>
-                  <HStack spacing={visual.spacing[8]} alignment="center">
-                    <Text style={{ fontSize: visual.fontSizes[16], fontWeight: '700', color: visual.colors['label'] }}>#{run.run_number}</Text>
-                    <Text lineLimit={visual.lineLimits[2]} style={{ fontSize: visual.fontSizes[13], color: visual.colors['label'] }}>{run.display_title || run.head_branch}</Text>
-                  </HStack>
-                  <HStack spacing={visual.spacing[7]}>
-                    <Text style={{ fontSize: visual.fontSizes[12], color: visual.colors['secondaryLabel'] }}>{run.event}</Text>
-                    <Text style={{ fontSize: visual.fontSizes[12], color: visual.colors['secondaryLabel'] }}>· {timeAgoText(run.updated_at) || formatShortTime(run.updated_at)}</Text>
-                  </HStack>
-                </VStack>
-              </MotionRow>
-            </NavigationLink>
-          )
-        })}
+      <Button buttonStyle="plain" tint={accentColor} action={() => animateChange(() => setShowAll(!showAll))}><MotionRow><Text>{showAll ? '全部记录 · 点击恢复关注策略' : '当前关注策略 · 点击查看全部'}</Text></MotionRow></Button>
+      {!loading && visibleRuns.length === 0 ? <Text foregroundStyle={visual.colors.secondaryLabel}>最近加载的记录没有符合条件的运行，可切换查看全部。</Text> : null}
+      <Section header={<Text style={{ fontWeight: '600', color: visual.colors['label'] }}>{visual.text['最近运行 · ']}{visibleRuns.length} / {runs.length}</Text>}>
+        <RunRecordList runs={visibleRuns} api={api} owner={owner} repo={repo} accentColor={accentColor} />
       </Section>
     </List>
   )

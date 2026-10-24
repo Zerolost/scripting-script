@@ -16,8 +16,8 @@ export const visualGroups: Record<string, string> = {
   colors: '颜色与强调色', background: '浅深色背景', glass: '官方玻璃', animation: '动画',
   fontSizes: '字号', spacing: '间距', sizes: '图标与容器尺寸', radii: '圆角',
   typography: '字重', lineLimits: '文字行数', shadow: '阴影', icons: 'SF Symbols',
-  text: '界面文案', brand: '品牌图标', login: '登录页', widget: '桌面小组件',
-  navigationTitleMode: '导航标题', textTransition: '文字过渡',
+  text: '界面文案', brand: '品牌图标', login: '登录页', widget: '桌面小组件', account: '登录账户资料', settings: 'Actions 关注策略',
+  detail: '运行详情内容', flow: 'Actions 动态流程图', navigationTitleMode: '导航标题', textTransition: '文字过渡',
 }
 
 function flatten(value: unknown, path: string = ''): Entry[] {
@@ -39,18 +39,29 @@ export function visualChoices(path: string): string[] | undefined {
   if (/^glass\/(row|card|input|brand|widget)$/.test(path)) return ['clear', 'regular']
   if (path.startsWith('typography/')) return ['ultraLight', 'thin', 'light', 'regular', 'medium', 'semibold', 'bold', 'heavy', 'black']
   if (/background\/(startPoint|endPoint)/.test(path)) return ['topLeading', 'top', 'topTrailing', 'leading', 'center', 'trailing', 'bottomLeading', 'bottom', 'bottomTrailing']
-  if (/widget\/(small|medium|large)\/.*Font$/.test(path)) return ['largeTitle', 'title', 'title2', 'title3', 'headline', 'subheadline', 'body', 'callout', 'footnote', 'caption', 'caption2']
+  if (/widget\/(small|medium|large|extraLarge|extraLargePortrait)\/.*Font$/.test(path)) return ['largeTitle', 'title', 'title2', 'title3', 'headline', 'subheadline', 'body', 'callout', 'footnote', 'caption', 'caption2']
   return undefined
 }
 
 export function visualRange(path: string): { min: number; max: number; step: number } {
+  if (path === 'flow/cycleDuration') return { min: 0.4, max: 5, step: 0.1 }
+  if (path === 'flow/lineWidth') return { min: 1, max: 6, step: 0.5 }
+  if (path === 'flow/nodeSpacing') return { min: 2, max: 24, step: 1 }
+  if (path === 'flow/arrivalStart') return { min: 0.45, max: 0.8, step: 0.01 }
+  if (path === 'flow/energyStrength') return { min: 0, max: 1, step: 0.05 }
+  if (path === 'flow/glowStrength') return { min: 0, max: 1, step: 0.05 }
+  if (path === 'flow/trailLength') return { min: 2, max: 10, step: 1 }
+  if (path.startsWith('flow/')) return { min: 8, max: 32, step: 1 }
   if (path === 'animation/duration') return { min: 0, max: 2, step: 0.01 }
   if (path.startsWith('animation/')) return { min: 0, max: 1, step: 0.01 }
+  if (path === 'detail/titleLines' || path === 'detail/commitLines') return { min: 1, max: 8, step: 1 }
   if (path.startsWith('lineLimits/')) return { min: 1, max: 10, step: 1 }
   if (path === 'shadow/y') return { min: -30, max: 30, step: 1 }
   if (path.startsWith('fontSizes/')) return { min: 8, max: 60, step: 1 }
   if (path.startsWith('sizes/')) return { min: 1, max: 160, step: 1 }
-  if (path.includes('/history/') || path === 'widget/nextVisibleMaxLargeTargets') return { min: 0, max: 8, step: 1 }
+  if (path === 'account/avatarSize') return { min: 24, max: 100, step: 1 }
+  if (path === 'account/nameFont' || path === 'account/detailFont') return { min: 8, max: 36, step: 1 }
+  if (path.includes('/history/') || path === 'widget/nextVisibleMaxLargeTargets' || path === 'widget/nextVisibleMaxExtraLargeTargets') return { min: 0, max: 8, step: 1 }
   return { min: 0, max: 64, step: 1 }
 }
 

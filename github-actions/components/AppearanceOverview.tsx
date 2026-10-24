@@ -1,41 +1,28 @@
-import { VStack, HStack, Text, Button, Image, Rectangle, Picker, useState, type Color, type Shape } from 'scripting'
+import { VStack, HStack, Text, Button, Image, Rectangle, Picker, useState, useColorScheme, type Color, type Shape } from 'scripting'
 import { visual } from '../visual.config'
-import { surface, glassButtonStyle, liquidGlassAvailable } from '../design/AllPatternDesign'
+import { surface, glassButtonStyle } from '../design/AllPatternDesign'
 import { CompatibleGlassContainer } from './CompatibleGlassContainer'
 import { useVisualSettings } from '../hooks/useVisualSettings'
 import { useAccentColor } from '../hooks/useAccentColor'
 import { BrandIcon } from './BrandIcon'
-import { GlassCard } from './GlassSurface'
+import { RunDetailPreview } from './RunDetailPreview'
 import { MotionRow, animateChange, motionTransition } from './Motion'
 
-type WidgetSize = 'small' | 'medium' | 'large'
+import { resolveWidgetLayout, type WidgetSize } from '../services/widgetLayout'
+import { WidgetContent, type WidgetData } from './WidgetContent'
+import type { WidgetFamily, ColorScheme } from 'scripting'
 
-export function OverviewWidget({ size, accent }: { size: WidgetSize; accent: Color }) {
-  const layout: typeof visual.widget.small = visual.widget[size]
-  const count: number = size === 'large' ? 3 : 1
-  const historyCount: number = Math.min(3, Math.max(0, size === 'large' ? visual.widget.history.largeThree : visual.widget.history.compact))
-  const showNext: boolean = visual.widget.showNext && (size !== 'large' || count <= visual.widget.nextVisibleMaxLargeTargets)
-  return (
-    <VStack alignment="leading" spacing={layout.outerSpacing} padding={layout.outerPad}
-      frame={{ maxWidth: size === 'small' ? 180 : 'infinity', alignment: 'leading' }}
-      {...surface(visual.glass.widget, { type: 'rect', cornerRadius: visual.radii[22], style: 'continuous' })}>
-      <Text font={layout.titleFont} fontWeight={visual.typography.semibold} foregroundStyle={visual.colors.label}>{visual.widget.title}</Text>
-      {Array.from({ length: count }, (_: unknown, index: number) => (
-        <VStack key={String(index)} alignment="leading" spacing={layout.itemSpacing}>
-          <HStack spacing={layout.rowSpacing}>
-            <Image systemName={visual.icons['bolt.fill']} font={layout.headerIcon} foregroundStyle={accent} />
-            <Text font={layout.titleFont} foregroundStyle={visual.colors.label} lineLimit={visual.lineLimits[1]} frame={{ maxWidth: 'infinity', alignment: 'leading' }}>{['Build', 'Test', 'Release'][index]}</Text>
-            <HStack padding={{ horizontal: visual.spacing[layout.runPad.horizontal], vertical: visual.spacing[layout.runPad.vertical] }} {...surface('regular', 'capsule', false, visual.widget.runColor)}>
-              <Image systemName={visual.icons['play.fill']} font={layout.runIcon} foregroundStyle={liquidGlassAvailable ? visual.colors['#FFFFFF'] : visual.widget.runColor} />
-            </HStack>
-          </HStack>
-          <Text font={layout.bodyFont} foregroundStyle={visual.colors.secondaryLabel}>example / actions · 成功</Text>
-          {showNext ? <Text font={layout.historyFont} foregroundStyle={visual.colors.secondaryLabel}>下次运行 · 今天 18:00</Text> : null}
-          {visual.widget.showHistory ? Array.from({ length: historyCount }, (_: unknown, history: number) => <Text key={String(history)} font={layout.historyFont} foregroundStyle={visual.colors.secondaryLabel}>{`✓ #${128 - history} · 构建成功`}</Text>) : null}
-        </VStack>
-      ))}
-    </VStack>
-  )
+export function OverviewWidget({ size }: { size: WidgetSize; accent: Color }) {
+  const scheme: ColorScheme = useColorScheme()
+  const family: WidgetFamily = ({ small: 'systemSmall', medium: 'systemMedium', large: 'systemLarge', extraLarge: 'systemExtraLarge', extraLargePortrait: 'systemExtraLargePortrait' } as const)[size]
+  const plan: ReturnType<typeof resolveWidgetLayout> = resolveWidgetLayout(family, size === 'extraLarge' ? 4 : size === 'extraLargePortrait' ? 5 : size === 'large' ? 3 : 1, visual.widget)
+  const sample: WidgetData = { ok: true, items: Array.from({ length: plan.itemCount }, (_: unknown, index: number) => ({
+    target: { owner: 'example', repo: 'actions', workflow: 'build.yml', branch: 'main' },
+    workflowName: ['Build', 'Test', 'Release', 'Deploy', 'Check'][index],
+    nextRun: new Date(Date.now() + 3600000),
+    runs: Array.from({ length: 8 }, (_: unknown, history: number) => ({ id: history + 1, run_number: 128 - history, status: 'completed', conclusion: 'success', event: 'workflow_dispatch', created_at: new Date(Date.now() - (history + 1) * 3600000).toISOString() })),
+  })) }
+  return <VStack environments={{ colorScheme: scheme }} spacing={0} frame={{ maxWidth: 'infinity', alignment: 'leading' }} clipShape={{ type: 'rect', cornerRadius: visual.radii[22] }}><WidgetContent data={sample} plan={plan} preview /></VStack>
 }
 
 export function AppearanceOverview() {
@@ -95,15 +82,11 @@ export function AppearanceOverview() {
                   </VStack>
                   <Image systemName={visual.icons['checkmark.circle.fill']} foregroundStyle={visual.colors['#34C759']} />
                 </MotionRow>
-                <GlassCard>
-                  <Text font={visual.fontSizes[22]} fontWeight={visual.typography.bold} foregroundStyle={visual.colors.label}>{visual.text['运行详情']}</Text>
-                  <Text font={visual.fontSizes[16]} foregroundStyle={visual.colors.label}>Build #128 · 构建成功</Text>
-                  <Text font={visual.fontSizes[14]} foregroundStyle={visual.colors.secondaryLabel}>main · octocat · 耗时 42 秒</Text>
-                  <Text font={visual.fontSizes[14]} foregroundStyle={visual.colors.secondaryLabel}>✓ Checkout　✓ Test　✓ Build</Text>
-                </GlassCard>
+                <RunDetailPreview />
                 <Button title="播放示例动画" action={play} buttonStyle={glassButtonStyle(true)} tint={accent} />
                 <Text foregroundStyle={visual.colors.label} contentTransition={visual.textTransition}>{playing ? `构建完成 · 演示 ${playback}` : '等待播放动画'}</Text>
                 {playing ? <MotionRow key={String(playback)}><Image systemName={visual.icons['checkmark.circle.fill']} foregroundStyle={accent} /><Text foregroundStyle={visual.colors.label}>文字与列表入场动画</Text></MotionRow> : null}
+                <Text font={visual.fontSizes[12]} foregroundStyle={visual.colors.secondaryLabel}>运行记录首次出现播放入场；本页滚回已显示的记录保持完整显示。</Text>
               </VStack>
             </CompatibleGlassContainer>
             <Text font="headline" foregroundStyle={visual.colors.label}>{visual.text['桌面小组件']}</Text>

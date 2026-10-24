@@ -50,8 +50,6 @@ function AppContent() {
   const handleLogout: () => void = () => {
     storageRemove('github_username')
     storageRemove('github_token')
-    storageRemove('widget_repo')
-    storageRemove('widget_repos')
     animateChange(() => setAuth(null))
     notifyHost(host, { type: 'logout' })
   }

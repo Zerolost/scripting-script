@@ -2,9 +2,51 @@ type AppearanceDescription = { title: string; description: string; keywords: str
 type DescriptionSpec = readonly [title: string, description: string]
 
 const fields: Record<string, DescriptionSpec> = {
+  'detail/titleLines': ['运行标题行数', '详情顶部运行标题的最大行数；默认两行，长标题可增加到八行。'],
+  'detail/commitLines': ['提交正文行数', '提交说明的最大行数；与运行标题重复的首行自动省略，保留后续正文。'],
+  'detail/showCommit': ['显示提交正文', '控制顶部提交说明正文，作者和提交时间继续保留。'],
+  'detail/showFocus': ['显示关键执行位置', '在顶部列出接口确认的失败或进行中任务与步骤；并行任务各自列出，不推测失败原因。'],
+  'flow/dockTransfer': ['入口收束交接', '光点抵达入口时保持可见，随后尾迹逐点收束并淡出；自动适配抵达占比和尾迹数量，避免终点前消失或长尾突然截断。'],
+  'flow/edgeTrail': ['沿圆角边缘掠光', '从真实入口内侧沿玻璃边缘推进：侧边入口先向上绕圆角，顶部入口向右绕角；光轨不穿过标题。关闭恢复顶部直线掠光。'],
+  'flow/compactQuietSteps': ['压缩静态步骤停留', '接力模式下，等待和跳过只占 16% 单步周期，首节点反馈占 36%，其他动态步骤占 72%；保留顺序和轮末停顿，减少空等。关闭恢复所有步骤等长。'],
+  'flow/quietSummary': ['汇总轻呼吸', '保留汇总动画，将外圈改为从透明开始的细线低强度呼吸，降低与步骤光流的视觉竞争；关闭恢复旋转或告警外圈。'],
+  'flow/relayMotion': ['步骤接力播放', '默认开启：每个任务内按原始步骤顺序播放，同一时刻仅一个步骤有流光或抵达反馈，一轮结束后短暂停顿；静态时隙可由压缩静态步骤停留调整。跳过与等待保留顺序但不发光，后续清理继续；状态改变时在当前周期结束后交接新的时隙计划，避免突然换焦点；不同任务各自演示。关闭恢复原有错峰循环。'],
+  'flow/focusBorder': ['抵达聚焦边缘', '光点抵达后，目标玻璃节点的细圆角边缘柔和亮起再退去；随状态着色，不覆盖标题，只在抵达窗口显示。'],
+  'flow/smoothTravel': ['流光缓入缓出', '光点沿连线柔和加速与减速；只改变空间移动，抵达时刻仍由光点抵达时刻控制。关闭恢复匀速。'],
+  'flow/showDirection': ['连线方向箭头', '在步骤间隙显示细箭头，随蛇形线路向右、向下或向左；暂停时仍可辨认顺序，不代表任务间依赖。'],
+  'flow/failureEcho': ['失败回声脉冲', '失败节点在光点抵达后追加一次较弱扩散，形成两次告警节奏；关闭保留一次脉冲。首节点与无步骤任务在自己的周期反馈，不虚构入线。'],
+  'flow/arrivalStart': ['光点抵达时刻', '一个周期中用于连线移动的占比，默认 0.64；范围 0.45–0.8。光点到达真实入口后才出现扩散光晕，随后节点上沿掠光，跳过节点保持静态。'],
+  'flow/statusColors': ['按执行结果着色', '默认开启：聚焦边缘、失败短标记和连线跟随状态色。成功显示流光，失败显示告警脉冲，跳过为静态虚线；关闭仅恢复装饰为强调色，状态文字和动效差异保留。'],
+  'icons/chevron.left': ['返回箭头图标', '各级页面左上角的返回按钮；箭头前景色直接使用当前强调色。设置分组总预览可安全点击演示。'],
+  'icons/xmark': ['退出脚本图标', '仓库页左上角的退出脚本按钮，默认关闭符号；颜色跟随当前强调色，退出登录图标独立保留。'],
+  'flow/energyStrength': ['节点能量强度', '控制光点抵达后的节点边缘掠光、真实入口扩散和汇总外圈的强度；范围 0–1，设为 0 关闭这些效果，原有连线流光保留。'],
+  'flow/showTiming': ['显示真实步骤耗时', '在步骤和汇总中显示接口时间计算的已结束耗时；缺少完整起止时间时不显示，不使用演示时间。'],
+  'flow/animate': ['启用流程流动动画', '控制连线流光、拖尾、节点掠光、抵达聚焦及汇总外圈，历史记录也可播放演示；同时受全局动画开关及图内暂停按钮控制。'],
+  'flow/cycleDuration': ['流动周期（秒）', '控制单步流光节奏，越大越缓慢。接力开启时动态步骤通常占此值的 72%，轮末休息 40%；静态压缩开启后首步反馈和静态步骤更短，整轮长度随步骤数增长。关闭接力时表示独立循环周期。'],
+  'flow/nodeSpacing': ['任务分组间距', '控制各任务分组之间的垂直间距。'],
+  'flow/lineWidth': ['流程连线宽度', '连接线粗细，单位为点。'],
+  'flow/glowStrength': ['流光光晕强度', '控制连线流光周围的柔和光晕，默认 0.55；范围 0–1，步长 0.05，越大越明显，设为 0 关闭光晕。'],
+  'flow/trailLength': ['流光尾迹采样数量', '控制错峰拖尾的采样数量，默认 6；范围 2–10，步长 1，越大尾迹越绵密。'],
+  'flow/showGrid': ['显示淡点阵背景', '控制流程图的淡点阵背景，默认开启，为科技视觉提供轻量定位参照。'], 
+  'flow/iconSize': ['状态图标尺寸', '任务和步骤状态图标大小。'],
+  'flow/titleFont': ['任务与步骤字号', '流程图中节点名称的字号，长名称自动换行。'],
+  'flow/detailFont': ['流程辅助字号', '状态、计数、图例与说明文字的字号。'],
+  'flow/showLegend': ['显示流程图例', '显示状态颜色及任务连接含义说明。'], 
+  'settings/showGuide': ['显示 Actions 使用提示', '控制关注策略设置与实时预览中的定时任务说明。字号、颜色和间距沿用全局调试设置。'],
+  'account/avatarSize': ['账户头像尺寸', '设置页登录资料与本分组预览的头像宽高，单位为点。'],
+  'account/nameFont': ['账户名称字号', '设置页登录资料与预览中名称的字号。'],
+  'account/detailFont': ['账户辅助资料字号', '账户登录名、简介及统计资料的字号。'],
+  'account/spacing': ['账户资料间距', '头像和文字之间、资料区块之间的间距。'],
+  'account/showBio': ['显示账户简介', '有简介时显示 GitHub 个人简介，不影响登录名和名称。'],
+  'account/showStats': ['显示账户统计', '显示公开仓库、关注者与正在关注数量；不包含私有仓库统计。'],
+  'widget/history/extraLargeFew': ['超大横向少量目标历史条数', '超大横向每列较少目标时的历史数量，实际还按可用高度收缩。'],
+  'widget/history/extraLargeMany': ['超大横向多个目标历史条数', '超大横向每列多个目标时的历史数量，实际还按可用高度收缩。'],
+  'widget/history/portraitFew': ['超大竖向少量目标历史条数', '超大竖向少量目标时的历史数量，实际还按可用高度收缩。'],
+  'widget/history/portraitMany': ['超大竖向多个目标历史条数', '超大竖向多个目标时的历史数量，实际还按可用高度收缩。'],
+  'widget/nextVisibleMaxExtraLargeTargets': ['超大号显示下次运行的目标数上限', '两种超大号在目标数量不超过此值时显示下次运行；仍受时间数据和可用高度限制。'],
   navigationTitleMode: ['导航栏标题样式', '用于仓库、工作流、运行记录、运行详情、设置和小组件设置页；大标题会占用更多顶部空间，自动模式由系统决定。登录页不采用此项。'],
   textTransition: ['文字更新过渡', 'MotionText 包装的文字更新采用透明度过渡；当前仅支持此选项。不会替换所有原生 Text 的过渡。'],
-  'background/enabled': ['显示默认渐变背景', '控制 AppBackground 及外观示例的渐变背景；关闭后不绘制默认渐变。配置了 background.render 时，实际页面优先使用自绘背景，此开关不能关闭它；不控制桌面小组件背景。'],
+  'background/enabled': ['显示默认渐变背景', '控制 AppBackground 及外观示例的渐变背景；关闭后不绘制默认渐变。配置了 background.render 时，实际页面优先使用自绘背景，此开关不能关闭它；小组件选择跟随脚本时也采用这些配置。'],
   'background/startPoint': ['渐变起点方向', '设置浅色和深色默认渐变共同的起点；与终点越接近，色彩过渡区域越集中。自绘背景不使用此项。'],
   'background/endPoint': ['渐变终点方向', '设置浅色和深色默认渐变共同的终点；改变方向会改变颜色分布。自绘背景不使用此项。'],
   'glass/row': ['列表行玻璃材质', '用于 MotionRow 列表行；通透材质更透背景，常规材质更明显。不控制详情卡片或登录输入框。'],
@@ -12,20 +54,20 @@ const fields: Record<string, DescriptionSpec> = {
   'glass/card': ['详情卡片玻璃材质', '用于 GlassSurface 的固定展示卡片及其示例；改变通透程度，卡片始终不可按压。'],
   'glass/input': ['登录输入框玻璃材质', '用于用户名与 Token 各自的玻璃输入框；常规材质更明显，通透材质更透背景。不会合并为整张表单玻璃。'],
   'glass/brand': ['登录品牌容器玻璃材质', '用于登录页品牌图像外的玻璃容器；常规材质更明显。品牌隐藏时看不到效果，图像自身颜色不受它控制。'],
-  'glass/widget': ['小组件玻璃材质', '用于桌面小组件正常内容的外层玻璃及外观示例；改变通透程度，不控制未配置或未登录提示的容器。'],
+  'glass/widget': ['小组件玻璃材质', '用于桌面小组件运行按钮的玻璃材质；整块背景由小组件背景来源控制，避免遮住透明壁纸。'],
   'glass/transition': ['玻璃形态过渡', '用于 MotionRow 和 GlassSurface 的玻璃过渡；原样表示不做形态过渡，显现表示材质出现，几何匹配用于系统匹配形状。实际效果取决于视图身份与系统，不能保证任意卡片自动合并。'],
   'glass/containerSpacing': ['列表玻璃融合距离', '用于 GlassList 的 GlassEffectContainer；增大允许更远的玻璃效果参与融合，不等于增大列表行间距。'],
   'animation/enabled': ['启用自定义界面动画', '控制共享 motion 的时长及入场缩放；关闭后时长设为零，MotionRow 直接显示完整大小与不透明度。系统导航和按钮反馈仍由系统提供。'],
   'animation/duration': ['界面动画时长（秒）', '用于共享 motion 的文字、列表入场及采用该动画的布局更新；增大播放更慢，零表示立即完成。动画总开关关闭时按零处理。'],
   'animation/extraBounce': ['界面动画额外弹性', '用于共享 snappy 动画；增大弹性更明显，设零取消额外弹性。实际运动也取决于时长及系统动画行为。'],
   'animation/transitionScale': ['内容过渡起始缩放比例', '用于共享透明度与缩放组合过渡，以及外观示例展开内容；越接近一，缩放幅度越小，较小值会从更小尺寸过渡。关闭动画时共享过渡使用一。'],
-  'animation/rowOpacity': ['列表入场初始不透明度', '用于 MotionRow 出现前的透明度；增大更实，设一无淡入差异，设零从完全透明开始。动画关闭或入场完成后始终为一。'],
+  'animation/rowOpacity': ['列表入场初始不透明度', '用于 MotionRow 出现前的透明度；增大更实，设一无淡入差异，设零从完全透明开始。动画关闭或入场完成后始终为一。运行记录按 ID 记住本页入场状态，滚回已出现的记录不重复播放。'],
   'animation/rowScale': ['列表入场初始缩放比例', '用于 MotionRow 出现前的大小；越接近一，缩放幅度越小，设零会从零大小开始。动画关闭或入场完成后始终为一。'],
   'typography/normal': ['常规字重预留项', '当前未发现页面读取 typography.normal；更改暂不改变界面，也不会统一覆盖普通文字的系统默认字重。'],
   'typography/medium': ['中等强调文字字重', '用于登录 Token 帮助链接及 MotionText 中原字重 500 的运行标题、任务名；选择更粗字重会加强这些文字。'],
   'typography/semibold': ['半粗强调文字字重', '用于原字重 600 的 MotionText、设置入口标题及显式采用该项的文字；选择更粗字重会加强这些标题。不是所有文字的统一开关。'],
   'typography/bold': ['重点标题字重', '用于登录标题与绑定按钮、小组件标题、运行编号及原字重 700 或 bold 的 MotionText；更粗会使重点文字更醒目。'],
-  'lineLimits/1': ['单行文字的最大行数', '影响所有采用原始行数一的调用点：详情运行标题、提交信息、步骤名，以及小组件标题、状态、时间、下次运行和历史。增大会减少截断并增加高度；大号小组件工作流名也采用此项。'],
+  'lineLimits/1': ['单行文字的最大行数', '影响所有采用原始行数一的调用点：详情步骤名，以及小组件标题、状态、时间、下次运行和历史。增大会减少截断并增加高度；大号小组件工作流名也采用此项。'],
   'lineLimits/2': ['双行名称的最大行数', '影响所有采用原始行数二的调用点：仓库名、工作流名、运行列表标题及小号和中号小组件工作流名。增大会减少截断但挤占其他内容空间。'],
   'shadow/radius': ['登录输入框阴影模糊半径', '仅用于登录用户名和 Token 输入框阴影；增大边缘更柔和、扩散更广，设零取消模糊，不等同于删除阴影。'],
   'shadow/y': ['登录输入框阴影上下偏移', '仅用于登录两个输入框阴影；正值向下、负值向上，数值绝对值越大偏移越远，零表示无上下偏移。'],
@@ -178,18 +220,18 @@ const widgetFields: Record<string, DescriptionSpec> = {
   rowSpacing: ['状态行图文间距', '工作流标题行、状态、下次运行及历史行的横向间距；增大减少文字可用宽度，零使图文贴近'],
   headerIcon: ['顶部品牌图标字号', '正常小组件顶部闪电爱心图标及示例闪电图标；增大图标更醒目并占用空间'],
   titleFont: ['标题文字样式', '正常小组件总标题与工作流名称、示例标题；选择较大样式会增加高度并使长名称更易截断'],
-  bodyFont: ['状态与下次运行文字样式', '正常小组件最新状态及下次运行文字；较大样式更醒目但更占空间。当前示例未读取此字段'],
+  bodyFont: ['状态与下次运行文字样式', '正常小组件最新状态及下次运行文字；较大样式更醒目但更占空间。实时示例与实际小组件共用此字段'],
   historyFont: ['历史记录文字样式', '正常小组件历史记录标题及示例历史与下次运行文字；较大样式更占空间，不改变真实小组件固定 caption2 的相对时间'],
   runIcon: ['运行与状态图标字号', '正常小组件播放、状态、历史及日历图标；增大图标更醒目并挤占文字空间。示例播放图标也使用此项'],
-  'runPad/horizontal': ['运行按钮横向内边距索引', '真实小组件先用此值查 visual.spacing，再作为播放图标横向内边距；需使用已有间距键，增大索引不保证实际留白增大。示例直接使用此数值'],
-  'runPad/vertical': ['运行按钮竖向内边距索引', '真实小组件先用此值查 visual.spacing，再作为播放图标竖向内边距；需使用已有间距键，增大索引不保证按钮更高。示例直接使用此数值'],
+  'runPad/horizontal': ['运行按钮横向内边距', '播放图标左右内边距，单位为点；实际小组件和实时示例直接使用此数值'],
+  'runPad/vertical': ['运行按钮竖向内边距', '播放图标上下内边距，单位为点；实际小组件和实时示例直接使用此数值'],
 }
 
 const choiceLabels: Record<string, string> = {
-  true: '开启', false: '关闭',
+  true: '开启', false: '关闭', script: '跟随脚本', system: '系统默认', dark: '深色', transparent: '透明背景',
   inline: '行内标题', large: '大标题', automatic: '系统自动', opacity: '透明度过渡',
   identity: '保持原样', materialize: '材质显现', matchedGeometry: '匹配几何形态',
-  clear: '通透玻璃', regular: '常规', ultraLight: '极细字重', thin: '纤细字重', light: '细字重',
+  clear: '通透玻璃', regular: '常规', ultraLight: '极细字重', thin: '纤细字重', light: '浅色 / 细字重',
   medium: '中等字重', semibold: '半粗字重', bold: '粗字重', heavy: '特粗字重', black: '极粗字重',
   topLeading: '左上', top: '顶部', topTrailing: '右上', leading: '左侧', center: '中央', trailing: '右侧',
   bottomLeading: '左下', bottom: '底部', bottomTrailing: '右下',
@@ -210,7 +252,7 @@ export function describeAppearance(path: string): { title: string; description: 
   if (group === 'background' && (key === 'light' || key === 'dark') && /^[0-2]$/.test(keys[2] ?? '')) {
     const mode: string = key === 'light' ? '浅色' : '深色'
     const position: string = ['起始', '中间', '末尾'][Number(keys[2])]
-    return result(path, `${mode}背景${position}色`, `用于${mode}模式默认背景渐变的第${Number(keys[2]) + 1}个色标及外观示例；改色会改变对应区域，透明色会透出下层。自绘背景优先，背景关闭时不显示默认渐变，不控制桌面小组件。`)
+    return result(path, `${mode}背景${position}色`, `用于${mode}模式默认背景渐变的第${Number(keys[2]) + 1}个色标及外观示例；改色会改变对应区域，透明色会透出下层。自绘背景优先，背景关闭时不显示默认渐变，小组件选择跟随脚本时也采用这些配色。`)
   }
   const numericScope: string | undefined = numeric[group]?.[key]
   if (numericScope !== undefined) {
@@ -229,8 +271,8 @@ export function describeAppearance(path: string): { title: string; description: 
   if (icon) return result(path, icon[0], `${icon[1]}；原符号「${key}」。替换为有效 SF Symbol 会改变所有采用此键的图标；不会改变操作、状态判定或图片内容，无效名称可能不显示。`)
   const location: string | undefined = group === 'text' ? textLocations[key] : undefined
   if (location !== undefined) return result(path, `文案「${key}」`, `原文「${key}」；位置：${location}。替换影响所有读取此原文键的调用点，不改业务数据或操作；长文本可能换行或截断，清空会隐藏对应文字。前后空格用于拼接时应保留。`)
-  if (group === 'widget' && ['small', 'medium', 'large'].includes(key)) {
-    const family: string = ({ small: '小号', medium: '中号', large: '大号' } as Record<string, string>)[key]
+  if (group === 'widget' && ['small', 'medium', 'large', 'extraLarge', 'extraLargePortrait'].includes(key)) {
+    const family: string = ({ small: '小号', medium: '中号', large: '大号', extraLarge: '超大横向', extraLargePortrait: '超大竖向' } as Record<string, string>)[key]
     const spec: DescriptionSpec | undefined = widgetFields[keys.slice(2).join('/')]
     if (spec) return result(path, `${family}小组件${spec[0]}`, `仅用于${family}尺寸。${spec[1]}。未配置提示不采用这套布局。`)
   }

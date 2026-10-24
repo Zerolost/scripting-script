@@ -1,3 +1,4 @@
+import { collectGitHubPages } from './githubPagination'
 import { surface } from '../design/AllPatternDesign'
 import { visual } from '../visual.config'
 import { HStack, VStack, useState, useEffect, useCallback, useRef, type Color } from "scripting"
@@ -14,31 +15,8 @@ export function storageRemove(key: string): void {
   Storage.remove(key)
 }
 
-export function getWidgetTargets(): string[] {
-  const list = Storage.get<string>('widget_repos')
-  if (list) {
-    try {
-      const arr = JSON.parse(list)
-      if (Array.isArray(arr)) {
-        return arr.filter((x): x is string => typeof x === 'string' && x.split('/').filter(Boolean).length >= 2)
-      }
-    } catch (_) { }
-  }
-  const legacy = Storage.get<string>('widget_repo')
-  if (legacy) return [legacy]
-  return []
-}
-
-export function setWidgetTargets(targets: string[]) {
-  const clean = targets.filter((t) => t.split('/').filter(Boolean).length >= 2)
-  if (clean.length === 0) {
-    Storage.remove('widget_repos')
-    Storage.remove('widget_repo')
-    return
-  }
-  Storage.set('widget_repos', JSON.stringify(clean))
-  Storage.remove('widget_repo')
-}
+export { getWidgetTargets, setWidgetTargets, createWidgetTargetStore } from './widgetTargetStore'
+export type { WidgetTargetStorage, WidgetTargetStore } from './widgetTargetStore'
 
 export function recordWidgetTrigger(owner: string, repo: string, workflowId: number) {
   Storage.set('widget_last_target', `${owner}/${repo}/${workflowId}`)
@@ -269,9 +247,22 @@ export interface Job {
   head_branch?: string
 }
 
+export interface AccountProfile {
+  login: string
+  name?: string | null
+  avatar_url?: string | null
+  bio?: string | null
+  company?: string | null
+  location?: string | null
+  public_repos?: number
+  followers?: number
+  following?: number
+}
+
 export class GitHubAPI {
   private token: string
   private username: string
+  private accountProfile: AccountProfile | null = null
   private readonly getInflight: Map<string, Promise<unknown>> = new Map()
   private readonly workflowCache: Map<string, { workflows: Workflow[]; expiresAt: number }> = new Map()
 
@@ -322,18 +313,44 @@ export class GitHubAPI {
     }
   }
 
+  getUsername(): string {
+    return this.username
+  }
+
+  async getCurrentUser(): Promise<AccountProfile> {
+    if (this.accountProfile) return this.accountProfile
+    const data: AccountProfile = await this.request<AccountProfile>('/user')
+    if (!data || typeof data.login !== 'string' || !data.login.trim()) throw new Error('账户资料暂时无法加载')
+    const profile: AccountProfile = {
+      login: data.login,
+      name: data.name,
+      avatar_url: data.avatar_url,
+      bio: data.bio,
+      company: data.company,
+      location: data.location,
+      public_repos: data.public_repos,
+      followers: data.followers,
+      following: data.following,
+    }
+    this.accountProfile = profile
+    return profile
+  }
+
   async getRepos(): Promise<Repo[]> {
-    return this.request<Repo[]>('/user/repos?per_page=100&sort=updated')
+    return collectGitHubPages<Repo>(async (page: number, perPage: number) => ({ items: await this.request<Repo[]>(`/user/repos?per_page=${perPage}&sort=updated&page=${page}`) }))
   }
 
   async getWorkflows(owner: string, repo: string, force: boolean = true): Promise<Workflow[]> {
     const path: string = `/repos/${owner}/${repo}/actions/workflows`
     const cached: { workflows: Workflow[]; expiresAt: number } | undefined = this.workflowCache.get(path)
-    if (!force && !this.getInflight.has(path) && cached && cached.expiresAt > Date.now()) return cached.workflows
+    if (!force && ![...this.getInflight.keys()].some((key: string): boolean => key.startsWith(`${path}?`)) && cached && cached.expiresAt > Date.now()) return cached.workflows
     this.workflowCache.delete(path)
-    const data: { workflows: Workflow[] } = await this.request<{ workflows: Workflow[] }>(path)
-    this.workflowCache.set(path, { workflows: data.workflows, expiresAt: Date.now() + 30000 })
-    return data.workflows
+    const workflows: Workflow[] = await collectGitHubPages<Workflow>(async (page: number, perPage: number) => {
+      const data: { workflows: Workflow[]; total_count: number } = await this.request(`${path}?per_page=${perPage}&page=${page}`)
+      return { items: data.workflows, total: data.total_count }
+    })
+    this.workflowCache.set(path, { workflows, expiresAt: Date.now() + 30000 })
+    return workflows
   }
 
   async getWorkflowRuns(owner: string, repo: string, workflowId: number): Promise<Run[]> {
@@ -376,10 +393,10 @@ export class GitHubAPI {
   }
 
   async getRunJobs(owner: string, repo: string, runId: number): Promise<Job[]> {
-    const data = await this.request<{ total_count: number; jobs: Job[] }>(
-      `/repos/${owner}/${repo}/actions/runs/${runId}/jobs?per_page=100`
-    )
-    return data.jobs
+    return collectGitHubPages<Job>(async (page: number, perPage: number) => {
+      const data: { total_count: number; jobs: Job[] } = await this.request(`/repos/${owner}/${repo}/actions/runs/${runId}/jobs?per_page=${perPage}&page=${page}`)
+      return { items: data.jobs, total: data.total_count }
+    })
   }
 }
 

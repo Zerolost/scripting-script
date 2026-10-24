@@ -1,3 +1,4 @@
+import { AccentNavigationDestination } from '../components/AccentNavigationDestination'
 import { useAccentColor } from '../hooks/useAccentColor'
 import type { Color } from 'scripting'
 import { visual } from '../visual.config'
@@ -11,12 +12,13 @@ import { useActionRepositories } from "../hooks/useActionRepositories"
 import { MotionText as Text, MotionRow, motion } from '../components/Motion'
 import { WorkflowListPage } from "./WorkflowListPage"
 import { SettingsPage } from './SettingsPage'
+import { ExitScriptButton } from '../components/SessionControls'
 
 export function RepoListPage({ api, onLogout }: { api: GitHubAPI; onLogout: () => void }) {
   const accentColor: Color = useAccentColor()
   const { data: repos, loading, errorMsg, noticeMsg, load } = useActionRepositories(api)
   return (
-    <List
+    <List tint={accentColor}
       navigationBarTitleDisplayMode={visual.navigationTitleMode}
       background={<AppBackground />}
       animation={{ animation: motion, value: `${loading}:${repos.length}:${errorMsg}:${noticeMsg}` }}
@@ -24,10 +26,10 @@ export function RepoListPage({ api, onLogout }: { api: GitHubAPI; onLogout: () =
       toolbar={
         <Toolbar>
           <ToolbarItem placement="topBarLeading">
-            <Button tint={accentColor} title={visual.text['退出']} systemImage={visual.icons['rectangle.portrait.and.arrow.right']} action={onLogout} />
+            <ExitScriptButton />
           </ToolbarItem>
           <ToolbarItemGroup placement="topBarTrailing">
-            <NavigationLink tint={accentColor} destination={<SettingsPage api={api} />}>
+            <NavigationLink tint={accentColor} destination={<AccentNavigationDestination><SettingsPage api={api} onLogout={onLogout} tint={accentColor} /></AccentNavigationDestination>}>
               <Image systemName={visual.icons['gearshape']} accessibilityLabel={visual.text['设置']} />
             </NavigationLink>
             <Button tint={accentColor} title={visual.text['刷新']} systemImage={visual.icons['arrow.clockwise']} action={load} disabled={loading} />
@@ -44,12 +46,13 @@ export function RepoListPage({ api, onLogout }: { api: GitHubAPI; onLogout: () =
           <NavigationLink {...glassListRow} tint={accentColor} buttonStyle="plain"
             key={repo.id}
             destination={
-              <WorkflowListPage
+              <AccentNavigationDestination><WorkflowListPage
+                tint={accentColor}
                 api={api}
                 owner={repo.owner.login}
                 repo={repo.name}
                 defaultBranch={repo.default_branch}
-              />
+              /></AccentNavigationDestination>
             }
           >
             <MotionRow spacing={visual.spacing[8]}>

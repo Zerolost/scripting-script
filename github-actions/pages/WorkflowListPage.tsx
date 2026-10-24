@@ -1,3 +1,4 @@
+import { AccentNavigationDestination } from '../components/AccentNavigationDestination'
 import { useAccentColor } from '../hooks/useAccentColor'
 import type { Color } from 'scripting'
 import { visual } from '../visual.config'
@@ -27,7 +28,7 @@ export function WorkflowListPage({
   )
 
   return (
-    <List
+    <List tint={accentColor}
       navigationBarTitleDisplayMode={visual.navigationTitleMode}
       background={<AppBackground />}
       transition={motionTransition}
@@ -47,13 +48,13 @@ export function WorkflowListPage({
             <NavigationLink {...glassListRow} tint={accentColor} buttonStyle="plain"
               key={wf.id}
               destination={
-                <RunListPage
+                <AccentNavigationDestination><RunListPage tint={accentColor}
                   api={api}
                   owner={owner}
                   repo={repo}
                   workflowId={wf.id}
                   defaultBranch={defaultBranch}
-                />
+                /></AccentNavigationDestination>
               }
             >
               <MotionRow spacing={visual.spacing[8]}>

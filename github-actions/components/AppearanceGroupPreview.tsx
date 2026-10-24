@@ -7,6 +7,11 @@ import { useVisualSettings } from '../hooks/useVisualSettings'
 import { useAccentColor } from '../hooks/useAccentColor'
 import { usePreviewAppearance } from '../hooks/usePreviewAppearance'
 import { BrandIcon } from './BrandIcon'
+import { AccountProfileContent } from './AccountProfileCard'
+import type { WidgetSize } from '../services/widgetLayout'
+import { RunDetailPreview } from './RunDetailPreview'
+import { RunDetailFlowPreview } from './RunDetailFlow'
+import { SettingsPreview } from './SettingsPreview'
 import { OverviewWidget } from './AppearanceOverview'
 import { CompatibleGlassContainer } from './CompatibleGlassContainer'
 import { MotionRow, animateChange } from './Motion'
@@ -18,7 +23,7 @@ export function AppearanceGroupPreview({ group }: { group: string }) {
   const accent: Color = useAccentColor()
   const { mode, scheme, dark, changeMode } = usePreviewAppearance()
   const [playing, setPlaying] = useState<boolean>(false)
-  const [size, setSize] = useState<'small' | 'medium' | 'large'>('medium')
+  const [size, setSize] = useState<WidgetSize>('medium')
   const entries: Entry[] = visualEntries(group)
   return (
     <VStack spacing={8} frame={{ maxWidth: 'infinity', alignment: 'leading' }}>
@@ -31,7 +36,11 @@ export function AppearanceGroupPreview({ group }: { group: string }) {
       <VStack environments={{ colorScheme: scheme }}>
           <VStack alignment="leading" spacing={12} padding={12} frame={{ maxWidth: 'infinity', alignment: 'leading' }} background={visual.background.enabled ? <Rectangle fill={{ colors: dark ? visual.background.dark : visual.background.light, startPoint: visual.background.startPoint, endPoint: visual.background.endPoint }} /> : (dark ? '#1c1c1e' : '#f5f5f7')} clipShape={{ type: 'rect', cornerRadius: 18 }}>
             {group === 'background' ? <VStack spacing={8}><Text foregroundStyle={visual.colors.label}>主要文字与背景渐变</Text><Text foregroundStyle={visual.colors.secondaryLabel}>辅助文字 · 切换明暗比较配色与方向</Text></VStack> :
-              group === 'widget' ? <VStack spacing={8}><Picker title="示例尺寸" value={size} onChanged={(next: string) => { if (next === 'small' || next === 'medium' || next === 'large') animateChange(() => setSize(next)) }} pickerStyle="segmented"><Text tag="small">小号</Text><Text tag="medium">中号</Text><Text tag="large">大号</Text></Picker><OverviewWidget size={size} accent={accent} /></VStack> :
+              group === 'widget' ? <VStack spacing={8}><Picker title="示例尺寸" value={size} onChanged={(next: string) => { if (next === 'small' || next === 'medium' || next === 'large' || next === 'extraLarge' || next === 'extraLargePortrait') animateChange(() => setSize(next)) }} pickerStyle="menu"><Text tag="small">小号</Text><Text tag="medium">中号</Text><Text tag="large">大号</Text><Text tag="extraLarge">超大横向</Text><Text tag="extraLargePortrait">超大竖向</Text></Picker><OverviewWidget size={size} accent={accent} /></VStack> :
+              group === 'detail' ? <RunDetailPreview /> :
+              group === 'flow' ? <RunDetailFlowPreview /> :
+              group === 'settings' ? <SettingsPreview /> :
+              group === 'account' ? <AccountProfileContent profile={{ login: 'octocat', name: '示例账户', bio: '比较账户资料的字号、头像与间距。', location: '上海', public_repos: 12, followers: 24, following: 8 }} /> :
               group === 'brand' ? <BrandIcon /> :
               group === 'login' ? <VStack spacing={8}><BrandIcon /><Text font={visual.fontSizes[28]} fontWeight={visual.typography.bold} foregroundStyle={visual.colors.label}>{visual.login.title}</Text><Text foregroundStyle={visual.colors.secondaryLabel}>{visual.login.subtitle}</Text><Text foregroundStyle={accent}>{visual.login.help}</Text><Text font="caption" foregroundStyle={visual.colors.secondaryLabel}>{visual.login.permission}</Text></VStack> :
               group === 'animation' || group === 'textTransition' ? <VStack spacing={8}><Button title={playing ? '再次切换' : '播放效果'} action={() => animateChange(() => setPlaying(!playing))} buttonStyle={glassButtonStyle(true)} tint={accent} /><Text contentTransition={visual.textTransition} foregroundStyle={visual.colors.label}>{playing ? '构建完成' : '正在构建'}</Text>{playing ? <MotionRow><Image systemName={visual.icons['bolt.fill']} foregroundStyle={accent} /><Text foregroundStyle={visual.colors.label}>列表入场与文字过渡</Text></MotionRow> : null}</VStack> :

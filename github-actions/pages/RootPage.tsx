@@ -8,10 +8,10 @@ export function RootPage({ auth, onLogout }: { auth: { token: string; username: 
   const host: GitHubActionsHost | undefined = useHost()
   const accentColor: Color = useAccentColor()
   const api: GitHubAPI = useMemo(() => new GitHubAPI(auth), [auth.token, auth.username])
-  if (host?.navigation === 'inherit') return <RepoListPage api={api} onLogout={onLogout} />
+  if (host?.navigation === 'inherit') return <RepoListPage api={api} onLogout={onLogout} tint={accentColor} />
   return (
     <NavigationStack tint={accentColor}>
-      <RepoListPage api={api} onLogout={onLogout} />
+      <RepoListPage api={api} onLogout={onLogout} tint={accentColor} />
     </NavigationStack>
   )
 }

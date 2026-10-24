@@ -22,7 +22,11 @@ type VisualConfig = {
   textTransition: 'opacity'
   brand: { imageURL: string; visible: boolean }
   login: { title: string; subtitle: string; help: string; permission: string }
-  widget: { showHistory: boolean; showNext: boolean; title: string; runColor: Color; small: WidgetLayout; medium: WidgetLayout; large: WidgetLayout; history: { compact: number; largeFew: number; largeThree: number; largeMany: number }; nextVisibleMaxLargeTargets: number }
+  flow: { dockTransfer: boolean; edgeTrail: boolean; compactQuietSteps: boolean; quietSummary: boolean; relayMotion: boolean; focusBorder: boolean; animate: boolean; cycleDuration: number; nodeSpacing: number; lineWidth: number; glowStrength: number; energyStrength: number; arrivalStart: number; smoothTravel: boolean; showDirection: boolean; failureEcho: boolean; statusColors: boolean; trailLength: number; showGrid: boolean; showTiming: boolean; iconSize: number; titleFont: number; detailFont: number; showLegend: boolean }
+  detail: { titleLines: number; commitLines: number; showCommit: boolean; showFocus: boolean }
+  settings: { showGuide: boolean }
+  account: { avatarSize: number; nameFont: number; detailFont: number; spacing: number; showBio: boolean; showStats: boolean }
+  widget: { showHistory: boolean; showNext: boolean; title: string; runColor: Color; small: WidgetLayout; medium: WidgetLayout; large: WidgetLayout; extraLarge: WidgetLayout; extraLargePortrait: WidgetLayout; history: { compact: number; largeFew: number; largeThree: number; largeMany: number; extraLargeFew: number; extraLargeMany: number; portraitFew: number; portraitMany: number }; nextVisibleMaxLargeTargets: number; nextVisibleMaxExtraLargeTargets: number }
 }
 
 type WidgetLayout = { outerPad: number; outerSpacing: number; itemSpacing: number; rowSpacing: number; headerIcon: number; titleFont: Font; bodyFont: Font; historyFont: Font; runIcon: number; runPad: { horizontal: number; vertical: number } }
@@ -46,13 +50,21 @@ export const visual: VisualConfig = {
   // imageURL 留空时使用 script.json 图标；visible 控制登录品牌图标。
   brand: { imageURL: '', visible: true },
   login: { title: 'GitHub Actions', subtitle: '随时随地管理您的工作流', help: '如何获取 Token？', permission: 'Token 需要 repo 和 workflow 权限' },
-  // 小、中、大号独立排版；大号按目标数量自动减少历史，避免挤出屏幕。
+  // 流程图的流动周期、节点间距和字号；可在外观调试实时修改。
+  flow: { dockTransfer: true, edgeTrail: true, compactQuietSteps: true, quietSummary: true, relayMotion: true, focusBorder: true, animate: true, cycleDuration: 1.4, nodeSpacing: 8, lineWidth: 2, glowStrength: 0.55, energyStrength: 0.65, arrivalStart: 0.64, smoothTravel: true, showDirection: true, failureEcho: true, statusColors: true, trailLength: 6, showGrid: true, showTiming: true, iconSize: 18, titleFont: 14, detailFont: 12, showLegend: true },
+  // 详情摘要的标题、提交正文行数及关键步骤提示。
+  detail: { titleLines: 2, commitLines: 3, showCommit: true, showFocus: true },
+  settings: { showGuide: true },
+  account: { avatarSize: 52, nameFont: 18, detailFont: 12, spacing: 10, showBio: true, showStats: true },
+  // 五种尺寸独立排版；超大号沿用大号能力，并利用额外空间显示历史。
   widget: {
     showHistory: true, showNext: true, title: 'GitHub 自动化', runColor: '#34C759',
     small: { outerPad: 10, outerSpacing: 8, itemSpacing: 6, rowSpacing: 6, headerIcon: 12, titleFont: 'subheadline', bodyFont: 'footnote', historyFont: 'caption', runIcon: 11, runPad: { horizontal: 6, vertical: 3 } },
     medium: { outerPad: 12, outerSpacing: 8, itemSpacing: 5, rowSpacing: 6, headerIcon: 13, titleFont: 'subheadline', bodyFont: 'footnote', historyFont: 'caption', runIcon: 11, runPad: { horizontal: 6, vertical: 3 } },
     large: { outerPad: 14, outerSpacing: 12, itemSpacing: 8, rowSpacing: 8, headerIcon: 14, titleFont: 'headline', bodyFont: 'subheadline', historyFont: 'footnote', runIcon: 12, runPad: { horizontal: 7, vertical: 4 } },
-    history: { compact: 2, largeFew: 3, largeThree: 1, largeMany: 0 }, nextVisibleMaxLargeTargets: 3,
+    extraLarge: { outerPad: 16, outerSpacing: 12, itemSpacing: 8, rowSpacing: 8, headerIcon: 16, titleFont: 'headline', bodyFont: 'subheadline', historyFont: 'footnote', runIcon: 12, runPad: { horizontal: 7, vertical: 4 } },
+    extraLargePortrait: { outerPad: 16, outerSpacing: 14, itemSpacing: 8, rowSpacing: 8, headerIcon: 16, titleFont: 'headline', bodyFont: 'subheadline', historyFont: 'footnote', runIcon: 12, runPad: { horizontal: 7, vertical: 4 } },
+    history: { compact: 2, largeFew: 3, largeThree: 1, largeMany: 0, extraLargeFew: 5, extraLargeMany: 2, portraitFew: 5, portraitMany: 1 }, nextVisibleMaxLargeTargets: 3, nextVisibleMaxExtraLargeTargets: 8,
   },
   // 左侧为原颜色，右侧为替换色。label / secondaryLabel 跟随系统明暗。
   colors: {
@@ -144,6 +156,8 @@ export const visual: VisualConfig = {
     'widget.small': 'widget.small',
     'checkmark.circle.fill': 'checkmark.circle.fill',
     trash: 'trash',
+    'chevron.left': 'chevron.left',
+    'xmark': 'xmark',
     'xmark.circle.fill': 'xmark.circle.fill',
     'questionmark.circle': 'questionmark.circle',
     'arrow.triangle.2.circlepath': 'arrow.triangle.2.circlepath',

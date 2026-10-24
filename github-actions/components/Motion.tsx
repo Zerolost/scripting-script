@@ -1,4 +1,4 @@
-import { Text as NativeText, HStack, VStack, useState, type FontWeight, type Color } from 'scripting'
+import { Text as NativeText, HStack, VStack, useState, type FontWeight, type Color, type VirtualNode, type VerticalAlignment } from 'scripting'
 import { surface, glassTransition } from '../design/AllPatternDesign'
 import { visual } from '../visual.config'
 import { glassTokens } from '../design/glassTokens'
@@ -25,7 +25,7 @@ export function animateChange(update: () => void): void {
 }
 
 export function MotionText(props: any) {
-  const { children, style, numberOfLines, foregroundStyle }: any = props
+  const { children, style, numberOfLines, foregroundStyle, ...nativeProps }: any = props
   const host: GitHubActionsHost | undefined = useHost()
   const originalColor: Color | undefined = style?.color ?? foregroundStyle
   const secondary: boolean = originalColor === 'secondaryLabel' || originalColor === '#8e8e93' || originalColor === visual.colors.secondaryLabel || originalColor === visual.colors['#8e8e93']
@@ -36,23 +36,32 @@ export function MotionText(props: any) {
   const value: string = typeof children === 'string' || typeof children === 'number' ? String(children) : ''
   return (
     <NativeText
-      font={style?.fontSize}
-      fontWeight={mappedWeight}
+      {...nativeProps}
+      font={nativeProps.font ?? style?.fontSize}
+      fontWeight={nativeProps.fontWeight ?? mappedWeight}
       foregroundStyle={color}
-      lineLimit={numberOfLines}
-      frame={style?.flex ? { maxWidth: 'infinity', alignment: 'leading' } : undefined}
-      contentTransition={visual.textTransition}
-      transition={motionTransition}
-      animation={{ animation: motion, value }}
+      lineLimit={nativeProps.lineLimit ?? numberOfLines}
+      frame={nativeProps.frame ?? (style?.flex ? { maxWidth: 'infinity', alignment: 'leading' } : undefined)}
+      contentTransition={nativeProps.contentTransition ?? visual.textTransition}
+      transition={nativeProps.transition ?? motionTransition}
+      animation={nativeProps.animation ?? { animation: motion, value }}
     >
       {children}
     </NativeText>
   )
 }
 
-export function MotionRow({ children, spacing, alignment }: any) {
+type MotionRowProps = {
+  children?: VirtualNode | null | boolean | undefined | (VirtualNode | null | boolean | undefined)[]
+  spacing?: number
+  alignment?: VerticalAlignment
+  appearanceID?: string
+  appeared?: Set<string>
+}
+
+export function MotionRow({ children, spacing, alignment, appearanceID, appeared }: MotionRowProps) {
   const host: GitHubActionsHost | undefined = useHost()
-  const [visible, setVisible] = useState<boolean>(false)
+  const [visible, setVisible] = useState<boolean>(() => Boolean(appearanceID && appeared?.has(appearanceID)))
   return (
     <HStack
       spacing={spacing ?? visual.spacing[8]}
@@ -63,7 +72,15 @@ export function MotionRow({ children, spacing, alignment }: any) {
       {...glassTransition(visual.glass.transition)}
       opacity={visible || !visual.animation.enabled ? 1 : visual.animation.rowOpacity}
       scaleEffect={visible || !visual.animation.enabled ? 1 : visual.animation.rowScale}
-      onAppear={() => { if (!visible) animateChange(() => setVisible(true)) }}
+      onAppear={() => {
+        if (visible) return
+        if (appearanceID && appeared?.has(appearanceID)) {
+          setVisible(true)
+          return
+        }
+        if (appearanceID) appeared?.add(appearanceID)
+        animateChange(() => setVisible(true))
+      }}
       transition={motionTransition}
       animation={{ animation: motion, value: visible }}
     >

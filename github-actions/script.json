@@ -1,45 +1,46 @@
 {
+  "entry" : "index.tsx",
+  "icon" : "square.2.layers.3d.fill",
   "contributors" : [
 
   ],
-  "iconImage" : "https:\/\/icon.icepanel.io\/Technology\/svg\/GitHub-Actions.svg",
+  "localizedDescriptions" : {
+    "es" : "Gestiona y supervisa flujos de trabajo de GitHub Actions: ejecuta, consulta el estado y revisa el historial.",
+    "en" : "Manage and monitor GitHub Actions workflows — run, track, and review workflow runs.",
+    "de" : "Verwalten und überwachen Sie GitHub-Actions-Workflows — Workflows auslösen, Status prüfen und Verlauf ansehen.",
+    "pt" : "Gerencie e monitore workflows do GitHub Actions — execute, acompanhe o status e revise o histórico.",
+    "it" : "Gestisci e monitora i workflow di GitHub Actions — esegui, controlla lo stato e consulta la cronologia.",
+    "zh" : "管理和监控 GitHub Actions 工作流——触发运行、查看状态与运行记录。",
+    "fr" : "Gérez et surveillez vos workflows GitHub Actions — déclenchez des exécutions, suivez leur statut et consultez l'historique.",
+    "ru" : "Управляйте и отслеживайте рабочие процессы GitHub Actions — запускайте, проверяйте статус и просматривайте историю.",
+    "ja" : "GitHub Actions ワークフローを管理・監視——実行のトリガー、ステータス確認、実行履歴の閲覧。"
+  },
+  "name" : "Github Action管理",
+  "color" : "rgba(0, 0, 0, 1.00)",
+  "author" : {
+    "email" : null,
+    "homepage" : null,
+    "name" : "LooCx"
+  },
+  "localizedNames" : {
+    "fr" : "Gestionnaire GitHub Actions",
+    "zh" : "Github Action管理",
+    "it" : "Gestione GitHub Actions",
+    "es" : "Gestor de GitHub Actions",
+    "ru" : "Менеджер GitHub Actions",
+    "ja" : "GitHub Actions マネージャー",
+    "en" : "GitHub Actions Manager",
+    "pt" : "Gerenciador de GitHub Actions",
+    "de" : "GitHub-Actions-Verwaltung"
+  },
+  "version" : "1.0.0",
   "intentInputTypes" : [
 
   ],
-  "color" : "rgba(0, 0, 0, 1.00)",
-  "icon" : "square.2.layers.3d.fill",
-  "entry" : "index.tsx",
-  "name" : "Github Action管理",
-  "localizedDescriptions" : {
-    "pt" : "Gerencie e monitore workflows do GitHub Actions — execute, acompanhe o status e revise o histórico.",
-    "de" : "Verwalten und überwachen Sie GitHub-Actions-Workflows — Workflows auslösen, Status prüfen und Verlauf ansehen.",
-    "en" : "Manage and monitor GitHub Actions workflows — run, track, and review workflow runs.",
-    "zh" : "管理和监控 GitHub Actions 工作流——触发运行、查看状态与运行记录。",
-    "ja" : "GitHub Actions ワークフローを管理・監視——実行のトリガー、ステータス確認、実行履歴の閲覧。",
-    "es" : "Gestiona y supervisa flujos de trabajo de GitHub Actions: ejecuta, consulta el estado y revisa el historial.",
-    "ru" : "Управляйте и отслеживайте рабочие процессы GitHub Actions — запускайте, проверяйте статус и просматривайте историю.",
-    "fr" : "Gérez et surveillez vos workflows GitHub Actions — déclenchez des exécutions, suivez leur statut et consultez l'historique.",
-    "it" : "Gestisci e monitora i workflow di GitHub Actions — esegui, controlla lo stato e consulta la cronologia."
-  },
-  "localizedNames" : {
-    "es" : "Gestor de GitHub Actions",
-    "pt" : "Gerenciador de GitHub Actions",
-    "de" : "GitHub-Actions-Verwaltung",
-    "it" : "Gestione GitHub Actions",
-    "fr" : "Gestionnaire GitHub Actions",
-    "ja" : "GitHub Actions マネージャー",
-    "ru" : "Менеджер GitHub Actions",
-    "zh" : "Github Action管理",
-    "en" : "GitHub Actions Manager"
-  },
-  "remoteResource" : null,
+  "iconImage" : "https:\/\/icon.icepanel.io\/Technology\/svg\/GitHub-Actions.svg",
   "runInApp" : false,
-  "author" : {
-    "email" : null,
-    "name" : "LooCx",
-    "homepage" : null
-  },
   "description" : "管理 GitHub Actions 工作流：浏览仓库与工作流、查看运行状态与历史、触发运行，并在桌面小组件上查看自动化状态与下次运行时间。",
-  "permissions" : null,
-  "version" : "1.0.0"
+  "remoteResource" : null,
+  "remoteDefinitionId" : null,
+  "permissions" : null
 }
