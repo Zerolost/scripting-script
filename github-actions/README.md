@@ -10,9 +10,9 @@
 https://github.com/Zerolost/scripting-script/tree/main/github-actions
 ```
 
-这个地址指向集合仓库中的单个脚本目录。也可以下载仓库，将 `github-actions/` 内的全部文件复制到本地脚本目录，保留子目录结构。项目根目录应直接包含 `script.json` 和 `index.tsx`。
+或者点击[安装](https://www.scripting.fun/import_scripts/?urls=%5B%22https%3A%2F%2Fgithub.com%2FZerolost%2Fscripting-script%2Ftree%2Fmain%2Fgithub-actions%22%5D)直接导入到scripting
 
-本地建议命名为「Github Action管理」。如果使用其他名称，主页启动卡片中的 `scriptName` 也要相应修改。
+这个地址指向集合仓库中的单个脚本目录。也可以下载仓库，将 `github-actions/` 内的全部文件复制到本地脚本目录，保留子目录结构。项目根目录应直接包含 `script.json` 和 `index.tsx`。
 
 ## 开始使用
 
@@ -37,7 +37,7 @@ iOS 26 使用官方 Liquid Glass；iOS 17、18 使用官方 Material 与系统�
 
 ## 更新来源
 
-在 Scripting 的脚本设置中，将远程资源设为：
+在 Scripting 的脚本设置中，将远程资源设为(由“安装”导入的这不需要配置)：
 
 ```text
 https://github.com/Zerolost/scripting-script/tree/main/github-actions
@@ -48,17 +48,17 @@ https://github.com/Zerolost/scripting-script/tree/main/github-actions
 ## 文件结构
 
 ```text
-index.tsx                  运行入口
+index.tsx                   运行入口
 home_screen_default_ui.tsx  主页入口
-widget.tsx                 桌面小组件
-app_intents.tsx            小组件动作
-script.json                脚本信息
-visual.config.ts           默认外观
-pages/                     页面
-components/                公共组件与动画
-hooks/                     状态与主题
-services/                  GitHub 请求与业务逻辑
-design/                    材质与版本兼容
-integration/               主页接入与宿主适配
-docs/                      使用说明
+widget.tsx                  桌面小组件
+app_intents.tsx             小组件动作
+script.json                 脚本信息
+visual.config.ts            默认外观
+pages/                      页面
+components/                 公共组件与动画
+hooks/                      状态与主题
+services/                   GitHub 请求与业务逻辑
+design/                     材质与版本兼容
+integration/                主页接入与宿主适配
+docs/                       使用说明
 ```
