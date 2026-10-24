@@ -37,7 +37,7 @@ iOS 26 使用官方 Liquid Glass；iOS 17、18 使用官方 Material 与系统�
 
 ## 更新来源
 
-在 Scripting 的脚本设置中，将远程资源设为(由“安装”导入的这不需要配置)：
+在 Scripting 的脚本设置中，将远程资源设为(由“安装”导入的则不需要配置)：
 
 ```text
 https://github.com/Zerolost/scripting-script/tree/main/github-actions
