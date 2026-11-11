@@ -1,11 +1,17 @@
 #!name=Scriptable 链接转 Scripting
-#!desc=v7：只 MITM scripthub.vercel.app。把 scriptable:// 安装链接改写为 scripting://，去掉 target="_blank"，按钮文案改为 Scripting 作为生效标记。
+#!desc=v9：只 MITM scripthub.vercel.app。把 scriptable:// 安装链接改写为 scripting://，并用响应脚本给 Loon/Stash/Shadowrocket 的远程导入按钮各加一个“本地模块”按钮，原有远程按钮保持不变。
 #!requirement=CORE_VERSION>=20
 
 [Body Rewrite]
 http-response ^https?://scripthub\.vercel\.app/ scriptable:///run_single/ scripting://run_single/ scriptable:///run/ scripting://run/ scriptable:/// scripting:// scriptable:// scripting://
 http-response ^https?://scripthub\.vercel\.app/ (:href="[^"]*SurgeModuleTool[^"]*")\s+target="_blank" $1
+http-response ^https?://scripthub\.vercel\.app/ (:href="[^"]*openloon/import\?plugin=[^"]*")\s+target="_blank" $1
+http-response ^https?://scripthub\.vercel\.app/ (:href="[^"]*install-override\?url=[^"]*")\s+target="_blank" $1
+http-response ^https?://scripthub\.vercel\.app/ (:href="[^"]*shadowrocket/install\?module=[^"]*")\s+target="_blank" $1
 http-response ^https?://scripthub\.vercel\.app/ Scriptable\)</a> Scripting)</a>
+
+[Script]
+ScriptHubLocalModule = type=http-response,pattern=^https?://scripthub\.vercel\.app/,requires-body=1,max-size=0,script-path=https://raw.githubusercontent.com/Zerolost/scripting-script/main/SurgeModuleTool/local-module.js
 
 [Header Rewrite]
 http-response ^https?://scripthub\.vercel\.app/ header-replace-regex Location scriptable:/// scripting://

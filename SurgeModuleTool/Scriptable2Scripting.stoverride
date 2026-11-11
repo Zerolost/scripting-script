@@ -1,0 +1,50 @@
+name: Scriptable 链接转 Scripting
+desc: >-
+  v9：只 MITM scripthub.vercel.app。把 scriptable:// 安装链接改写为 scripting://，
+  并用响应脚本给 Loon/Stash/Shadowrocket 的远程导入按钮各加一个“本地模块”按钮，原有远程按钮保持不变。
+author: Scripting
+homepage: https://github.com/Script-Hub-Org/Script-Hub
+
+script-providers:
+  ScriptHubLocalModule:
+    url: https://raw.githubusercontent.com/Zerolost/scripting-script/main/SurgeModuleTool/local-module.js
+    interval: 86400
+
+http:
+  mitm:
+    - "scripthub.vercel.app"
+
+  header-rewrite:
+    - >-
+      ^https?://scripthub\.vercel\.app/ response-replace-regex Location scriptable:/// scripting://
+
+  body-rewrite:
+    # scriptable:// → scripting://
+    - >-
+      ^https?://scripthub\.vercel\.app/ response-replace-regex scriptable:///run_single/ scripting://run_single/
+    - >-
+      ^https?://scripthub\.vercel\.app/ response-replace-regex scriptable:///run/ scripting://run/
+    - >-
+      ^https?://scripthub\.vercel\.app/ response-replace-regex scriptable:/// scripting://
+    - >-
+      ^https?://scripthub\.vercel\.app/ response-replace-regex scriptable:// scripting://
+    # 去掉 target="_blank"
+    - >-
+      ^https?://scripthub\.vercel\.app/ response-replace-regex (:href="[^"]*SurgeModuleTool[^"]*")\s+target="_blank" $1
+    - >-
+      ^https?://scripthub\.vercel\.app/ response-replace-regex (:href="[^"]*openloon/import\?plugin=[^"]*")\s+target="_blank" $1
+    - >-
+      ^https?://scripthub\.vercel\.app/ response-replace-regex (:href="[^"]*install-override\?url=[^"]*")\s+target="_blank" $1
+    - >-
+      ^https?://scripthub\.vercel\.app/ response-replace-regex (:href="[^"]*shadowrocket/install\?module=[^"]*")\s+target="_blank" $1
+    # 按钮文案作为生效标记
+    - >-
+      ^https?://scripthub\.vercel\.app/ response-replace-regex Scriptable\)</a> Scripting)</a>
+
+  # 追加三个“本地模块”按钮，原有远程导入按钮保留
+  script:
+    - name: ScriptHubLocalModule
+      match: ^https?://scripthub\.vercel\.app/
+      type: response
+      require-body: true
+      timeout: 10

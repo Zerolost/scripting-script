@@ -1,6 +1,7 @@
 import { fetch } from "scripting"
 import { SURGE_OPEN_URL, SURGE_RELOAD_URL } from "../constants"
-import type { ModuleEntry, Settings, UpdateResult, UpdateSummary } from "../types"
+import { TARGETS } from "../constants/targets"
+import type { ModuleEntry, Settings, TargetId, UpdateResult, UpdateSummary } from "../types"
 import {
   composeUpdatedContent,
   deriveNameFromUrl,
@@ -9,9 +10,16 @@ import {
   isModuleContent,
   isModuleFileName,
   parseModuleHeader,
+  resolveTarget,
   timestampOf,
   toValidFileName,
 } from "../utils/moduleContent"
+import {
+  buildRemoteImportUrl,
+  fileNameFromConvertedUrl,
+  parseModuleInput,
+  stripKnownExtension,
+} from "../utils/targets"
 import { ensureFolder } from "./settingsStore"
 
 /** 统一成毫秒 */
@@ -91,17 +99,19 @@ export function readLocalModuleEntry(path: string): ModuleEntry | null {
     } catch (error) {
       console.log("读取本地模块失败", error)
     }
-    const header = parseModuleHeader(content)
     const fileName = fileNameOf(path)
+    const target = resolveTarget(content, fileName)
+    const header = parseModuleHeader(content, target)
     return {
       path,
       fileName,
-      name: header.name || fileName.replace(/\.[^.]+$/, ""),
+      name: header.name || stripKnownExtension(fileName),
       desc: header.desc,
       subscribedUrl: header.subscribedUrl,
       size: stat.size,
       modifiedAt: toMillis(timestampOf(stat.modificationDate)),
       hasSubscription: Boolean(header.subscribedUrl),
+      target,
       status: "idle",
     }
   } catch (error) {
@@ -150,16 +160,18 @@ export async function scanModules(folderPath: string): Promise<ModuleEntry[]> {
         readError = error instanceof Error ? error.message : String(error)
         console.log(`读取失败: ${fileName}`, error)
       }
-      const header = parseModuleHeader(content)
+      const target = resolveTarget(content, fileName)
+      const header = parseModuleHeader(content, target)
       entries.push({
         path,
         fileName,
-        name: header.name || fileName.replace(/\.[^.]+$/, ""),
+        name: header.name || stripKnownExtension(fileName),
         desc: header.desc,
         subscribedUrl: header.subscribedUrl,
         size: stat.size,
         modifiedAt: toMillis(timestampOf(stat.modificationDate)),
         hasSubscription: Boolean(header.subscribedUrl),
+        target,
         status: readError ? "failed" : "idle",
         error: readError,
       })
@@ -185,7 +197,7 @@ export async function updateModule(entry: ModuleEntry, settings: Settings): Prom
     }
   }
 
-  const localHeader = parseModuleHeader(localContent)
+  const localHeader = parseModuleHeader(localContent, entry.target)
   const url = localHeader.subscribedUrl
   if (!url) {
     return {
@@ -209,17 +221,17 @@ export async function updateModule(entry: ModuleEntry, settings: Settings): Prom
     }
   }
 
-  if (!isModuleContent(remote)) {
+  if (!isModuleContent(remote, entry.target)) {
     return {
       ok: false,
       reason: "invalid",
-      message: "远端内容不是合法模块（缺少 #!name）",
+      message: `远端内容不是合法的 ${TARGETS[entry.target].app} ${TARGETS[entry.target].kind}`,
       entry: { ...entry, status: "failed", error: "内容非法" },
     }
   }
 
-  const remoteHeader = parseModuleHeader(remote)
-  const content = composeUpdatedContent(remote, url)
+  const remoteHeader = parseModuleHeader(remote, entry.target)
+  const content = composeUpdatedContent(remote, url, entry.target)
   try {
     await writeTextFile(entry.path, content)
   } catch (error) {
@@ -272,24 +284,49 @@ export async function updateAllModules(
   return summary
 }
 
-/** 从链接下载并保存为本地模块 */
+/** 同名文件存在时，生成一个不冲突的路径 */
+function uniquePath(folderPath: string, stem: string, extension: string): string {
+  let candidate = `${folderPath}/${stem}${extension}`
+  let index = 1
+  while (FileManager.existsSync(candidate)) {
+    candidate = `${folderPath}/${stem}-${index}${extension}`
+    index += 1
+  }
+  return candidate
+}
+
+/**
+ * 从链接下载并保存为本地模块。
+ * 链接可以是 Script-Hub 的转换结果，也可以直接是各 App 的导入链接。
+ */
 export async function installFromURL(
-  url: string,
+  rawUrl: string,
   name: string | null,
   folderPath: string,
-  settings: Settings
+  settings: Settings,
+  targetOverride?: TargetId | null
 ): Promise<ModuleEntry> {
-  const trimmed = url.trim()
-  if (!/^https?:\/\//i.test(trimmed)) {
+  const parsed = parseModuleInput(rawUrl)
+  const url = parsed.url.trim()
+  if (!/^https?:\/\//i.test(url)) {
     throw new Error("请填写 http(s) 开头的模块链接")
   }
-  const remote = await fetchModuleText(trimmed, settings.userAgent)
-  if (!isModuleContent(remote)) {
-    throw new Error("目标内容不是合法模块（缺少 #!name）")
+
+  const remote = await fetchModuleText(url, settings.userAgent)
+  const nameFromUrl = fileNameFromConvertedUrl(url)
+  const hint = targetOverride ?? parsed.target
+  const target = resolveTarget(remote, nameFromUrl ?? undefined, hint)
+
+  if (!isModuleContent(remote, target)) {
+    const info = TARGETS[target]
+    throw new Error(`目标内容不是合法的 ${info.app} ${info.kind}`)
   }
-  const header = parseModuleHeader(remote)
-  const baseName = toValidFileName(name?.trim() || header.name || deriveNameFromUrl(trimmed) || "untitled")
-  const suggested = baseName.toLowerCase().endsWith(".sgmodule") ? baseName : `${baseName}.sgmodule`
+
+  const header = parseModuleHeader(remote, target)
+  const rawName = name?.trim() || parsed.name || nameFromUrl || header.name || deriveNameFromUrl(url) || "untitled"
+  const baseName = toValidFileName(stripKnownExtension(rawName)) || "untitled"
+  const extension = TARGETS[target].extension
+  const suggested = `${baseName}${extension}`
   let path = `${folderPath}/${suggested}`
 
   // 同名文件存在时：同源则视为重新安装直接覆盖，不同源则另存副本，避免覆盖用户手工修改
@@ -300,20 +337,13 @@ export async function installFromURL(
     } catch (error) {
       console.log("读取已存在模块失败", error)
     }
-    if (extractSubscribedUrl(existing) !== trimmed) {
-      const stem = baseName.replace(/\.sgmodule$/i, "")
-      let index = 1
-      let candidate = `${folderPath}/${stem}-${index}.sgmodule`
-      while (FileManager.existsSync(candidate)) {
-        index += 1
-        candidate = `${folderPath}/${stem}-${index}.sgmodule`
-      }
-      path = candidate
+    if (extractSubscribedUrl(existing) !== url) {
+      path = uniquePath(folderPath, baseName, extension)
     }
   }
 
   const fileName = fileNameOf(path)
-  const content = composeUpdatedContent(remote, trimmed)
+  const content = composeUpdatedContent(remote, url, target)
   await ensureFolder(folderPath)
   await writeTextFile(path, content)
   const stat = FileManager.statSync(path)
@@ -322,10 +352,11 @@ export async function installFromURL(
     fileName,
     name: header.name || baseName,
     desc: header.desc,
-    subscribedUrl: trimmed,
+    subscribedUrl: url,
     size: stat.size,
     modifiedAt: toMillis(timestampOf(stat.modificationDate)) || Date.now(),
     hasSubscription: true,
+    target,
     status: "success",
   }
 }
@@ -360,7 +391,22 @@ export async function openSurge(): Promise<boolean> {
   }
 }
 
-/** 分享文件（用于导入 Surge） */
+/** 用目标 App 的 URL Scheme 导入远端模块 */
+export async function importToTarget(entry: ModuleEntry): Promise<boolean> {
+  if (!entry.subscribedUrl) {
+    return false
+  }
+  const info = TARGETS[entry.target]
+  const url = buildRemoteImportUrl(entry.target, entry.subscribedUrl, entry.name)
+  try {
+    return await Safari.openURL(url)
+  } catch (error) {
+    console.log(`打开 ${info.app} 失败`, error)
+    return false
+  }
+}
+
+/** 分享文件（用于导入各 App 的本地文件） */
 export async function shareFile(path: string): Promise<boolean> {
   return await ShareSheet.present([path])
 }

@@ -1,12 +1,35 @@
-import { Button, HStack, Image, Rectangle, ScrollView, Text, TextField, Toggle, VStack, ZStack, useState } from "scripting"
+import { Button, HStack, Image, Rectangle, ScrollView, Spacer, Text, TextField, Toggle, VStack, ZStack, useState } from "scripting"
 import { GlassCard } from "../components/GlassCard"
 import { GlassText } from "../components/GlassText"
+import { TargetBadge } from "../components/TargetBadge"
 import { childToolbar } from "../components/TopToolbar"
+import {
+  EGERN_INSTALL_PREFIX,
+  LOON_INSTALL_PREFIX,
+  REMOTE_MODULE_URLS,
+  SHADOWROCKET_INSTALL_PREFIX,
+  STASH_INSTALL_PREFIX,
+  SURGE_INSTALL_PREFIX,
+  SURGE_MODULE_STORE_URL,
+  TOOL_VERSION,
+} from "../constants"
+import { TARGET_LIST, TARGETS } from "../constants/targets"
+import { APP_ICONS } from "../constants/appIcons"
 import { useLibrary } from "../contexts/LibraryContext"
 import { fullFillFrame, leadingFillFrame, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
-import { EGERN_INSTALL_PREFIX, REMOTE_MODULE_URL, SURGE_INSTALL_PREFIX, TOOL_VERSION, SURGE_MODULE_STORE_URL } from "../constants"
 import { candidateFolders } from "../services/settingsStore"
-import type { Navigate } from "../types"
+import type { Navigate, TargetId } from "../types"
+
+/** 拼出目标 App 的远程安装链接 */
+function installUrl(target: TargetId, url: string): string {
+  const encoded = encodeURIComponent(url)
+  switch (target) {
+    case "loon": return `${LOON_INSTALL_PREFIX}${encoded}`
+    case "stash": return `${STASH_INSTALL_PREFIX}${encoded}`
+    case "shadowrocket": return `${SHADOWROCKET_INSTALL_PREFIX}${encoded}`
+    default: return `${SURGE_INSTALL_PREFIX}${encoded}`
+  }
+}
 
 /** 设置页 */
 export function SettingsPage({ go }: { go: Navigate }) {
@@ -51,7 +74,7 @@ export function SettingsPage({ go }: { go: Navigate }) {
               />
             </HStack>
             <Text font="caption2" foregroundStyle={palette.tertiaryLabel}>
-              通过文件选择器授权后，路径会保存为书签，重启脚本仍可读写。
+              通过文件选择器授权后，路径会保存为书签，重启脚本仍可读写。四种目标 App 的文件都放在同一目录，按后缀区分。
             </Text>
           </GlassCard>
 
@@ -111,25 +134,49 @@ export function SettingsPage({ go }: { go: Navigate }) {
 
           <GlassCard>
             <Text font="headline">反劫持模块</Text>
-            <GlassText>
-              <Text font="caption2" monospaced lineLimit={2} truncationMode="middle">{REMOTE_MODULE_URL}</Text>
-            </GlassText>
-            <HStack spacing={spacing.sm} frame={leadingFillFrame}>
-              <Button
-                title="导入 Surge"
-                systemImage="arrow.down.to.line"
-                buttonStyle="glassProminent"
-                action={() => void Safari.openURL(`${SURGE_INSTALL_PREFIX}${encodeURIComponent(REMOTE_MODULE_URL)}`)}
-              />
-              <Button
-                title="导入 Egern"
-                systemImage="arrow.down.to.line"
-                buttonStyle="glass"
-                action={() => void Safari.openURL(`${EGERN_INSTALL_PREFIX}${encodeURIComponent(REMOTE_MODULE_URL)}`)}
-              />
-            </HStack>
+            <Text font="caption" foregroundStyle={palette.secondaryLabel}>
+              四个 App 各一份等价实现，装好后在对应 App 里开启模块并信任 MITM 证书。
+            </Text>
+            {TARGET_LIST.map(item => (
+              <VStack key={item.id} alignment="leading" spacing={spacing.sm} frame={leadingFillFrame}>
+                <HStack spacing={spacing.sm} frame={leadingFillFrame}>
+                  <TargetBadge target={item.id} />
+                  <Spacer />
+                </HStack>
+                <GlassText>
+                  <Text font="caption2" monospaced lineLimit={2} truncationMode="middle">
+                    {REMOTE_MODULE_URLS[item.id]}
+                  </Text>
+                </GlassText>
+                <HStack spacing={spacing.sm} frame={leadingFillFrame}>
+                  <Button
+                    title={`导入 ${item.app}`}
+                    systemImage="arrow.down.to.line"
+                    buttonStyle="glassProminent"
+                    action={() => void Safari.openURL(installUrl(item.id, REMOTE_MODULE_URLS[item.id]))}
+                  />
+                  <Button
+                    title="复制"
+                    systemImage="doc.on.doc"
+                    buttonStyle="glass"
+                    action={() => {
+                      void Pasteboard.setString(REMOTE_MODULE_URLS[item.id]).then(() => showNotice(`已复制 ${TARGETS[item.id].app} 模块链接`))
+                    }}
+                  />
+                </HStack>
+              </VStack>
+            ))}
+            <Button
+              buttonStyle="glass"
+              action={() => void Safari.openURL(`${EGERN_INSTALL_PREFIX}${encodeURIComponent(REMOTE_MODULE_URLS.surge)}`)}
+            >
+              <HStack spacing={6}>
+                <Image imageUrl={APP_ICONS.egern} resizable={true} frame={{ width: 18, height: 18 }} />
+                <Text>导入 Egern</Text>
+              </HStack>
+            </Button>
             <Text font="caption2" foregroundStyle={palette.tertiaryLabel}>
-              Egern 与 Surge 使用同一份模块（Script Hub 的 Egern 导入也是这个 scheme），需先信任 MITM 证书。
+              Egern 与 Surge 共用同一份 .sgmodule。Loon 本地插件、Stash 本地覆写、Shadowrocket 本地模块都可以在详情页「分享本地文件」导入。
             </Text>
           </GlassCard>
 
@@ -142,7 +189,7 @@ export function SettingsPage({ go }: { go: Navigate }) {
               </Text>
             </HStack>
             <Text font="caption" foregroundStyle={palette.secondaryLabel}>
-              功能对齐 Script-Hub 的 SurgeModuleTool.js，内置 scriptable:// → scripting:// 的浏览器脚本。
+              功能对齐 Script-Hub 的 SurgeModuleTool.js，并扩展到 Loon 插件、Stash 覆写与 Shadowrocket 模块。
             </Text>
             <Button
               title="打开原项目"

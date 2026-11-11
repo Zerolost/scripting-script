@@ -1,6 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type VirtualNode } from "scripting"
-import type { ModuleEntry, Settings, UpdateResult, UpdateSummary } from "../types"
+import { TARGETS } from "../constants/targets"
+import type { ModuleEntry, Settings, TargetId, UpdateResult, UpdateSummary } from "../types"
 import {
+  importToTarget,
   installFromURL,
   reloadSurge,
   removeModule,
@@ -23,7 +25,8 @@ export type LibraryContextValue = {
   chooseFolder: () => Promise<void>
   updateOne: (entry: ModuleEntry) => Promise<UpdateResult>
   updateAll: () => Promise<UpdateSummary>
-  addFromURL: (url: string, name: string) => Promise<ModuleEntry>
+  addFromURL: (url: string, name: string, target?: TargetId | null) => Promise<ModuleEntry>
+  importOne: (entry: ModuleEntry) => Promise<boolean>
   remove: (entry: ModuleEntry) => Promise<void>
   reload: () => Promise<boolean>
 }
@@ -175,12 +178,12 @@ export function LibraryProvider({
   }, [modules, settings, showNotice])
 
   const addFromURL = useCallback(
-    async (url: string, name: string): Promise<ModuleEntry> => {
+    async (url: string, name: string, target?: TargetId | null): Promise<ModuleEntry> => {
       setBusy(true)
       try {
         // 首次从 URL Scheme 进入时目录可能还没解析出来，这里再解析一次
         const targetFolder = folderPath || (await resolveModuleFolder(settings))
-        const entry = await installFromURL(url, name, targetFolder, settings)
+        const entry = await installFromURL(url, name, targetFolder, settings, target)
         await refresh()
         showNotice(`✅ 已保存 ${entry.fileName}`)
         return entry
@@ -196,6 +199,15 @@ export function LibraryProvider({
       await removeModule(entry)
       setModules(current => current.filter(item => item.path !== entry.path))
       showNotice(`已删除 ${entry.fileName}`)
+    },
+    [showNotice]
+  )
+
+  const importOne = useCallback(
+    async (entry: ModuleEntry): Promise<boolean> => {
+      const ok = await importToTarget(entry)
+      showNotice(ok ? `已交给 ${TARGETS[entry.target].app} 导入` : "导入失败，可改用分享本地文件")
+      return ok
     },
     [showNotice]
   )
@@ -220,6 +232,7 @@ export function LibraryProvider({
       updateOne,
       updateAll,
       addFromURL,
+      importOne,
       remove,
       reload,
     }),
@@ -236,6 +249,7 @@ export function LibraryProvider({
       updateOne,
       updateAll,
       addFromURL,
+      importOne,
       remove,
       reload,
     ]

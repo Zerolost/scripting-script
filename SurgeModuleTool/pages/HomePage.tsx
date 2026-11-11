@@ -4,10 +4,12 @@ import { GlassText } from "../components/GlassText"
 import { ModuleRow } from "../components/ModuleRow"
 import { SectionTitle } from "../components/SectionTitle"
 import { StatTile } from "../components/StatTile"
+import { TargetBadge } from "../components/TargetBadge"
 import { rootToolbar } from "../components/TopToolbar"
+import { TARGET_LIST } from "../constants/targets"
 import { useLibrary } from "../contexts/LibraryContext"
 import { fullFillFrame, leadingFillFrame, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
-import type { Navigate } from "../types"
+import type { Navigate, TargetId } from "../types"
 
 function ToolRow({ icon, title, subtitle, onTap }: { icon: string; title: string; subtitle: string; onTap: () => void }) {
   return (
@@ -38,12 +40,19 @@ export function HomePage({ go }: { go: Navigate }) {
     withUrl: modules.filter(item => item.hasSubscription).length,
     failed: modules.filter(item => item.status === "failed").length,
   }), [modules])
+  const targetCounts = useMemo(() => {
+    const counts: Record<TargetId, number> = { surge: 0, loon: 0, stash: 0, shadowrocket: 0 }
+    for (const item of modules) {
+      counts[item.target] += 1
+    }
+    return counts
+  }, [modules])
 
   return (
     <ZStack>
       <Rectangle fill={pageGradient} ignoresSafeArea />
       <ScrollView
-        navigationTitle="Surge 模块工具"
+        navigationTitle="模块工具"
         navigationBarTitleDisplayMode="inline"
         toolbarBackgroundVisibility="hidden"
         toolbar={rootToolbar(dismiss, () => void refresh(), busy)}
@@ -99,6 +108,23 @@ export function HomePage({ go }: { go: Navigate }) {
             </Button>
           </GlassCard>
 
+          <SectionTitle title="目标 App" caption="覆写 · 模块 · 插件" />
+          <GlassCard>
+            {TARGET_LIST.map(item => (
+              <HStack key={item.id} spacing={spacing.sm} frame={leadingFillFrame}>
+                <TargetBadge target={item.id} />
+                <Text font="caption2" monospaced foregroundStyle={palette.tertiaryLabel}>{item.extension}</Text>
+                <Spacer />
+                <Text font="caption" foregroundStyle={palette.secondaryLabel} contentTransition="numericText">
+                  {targetCounts[item.id]} 个
+                </Text>
+              </HStack>
+            ))}
+            <Text font="caption2" foregroundStyle={palette.tertiaryLabel}>
+              Script-Hub 转换时选择对应目标，本地模块按钮会带上 target 直接打开本脚本。
+            </Text>
+          </GlassCard>
+
           <SectionTitle title="模块" caption={`${stats.total} 个文件`} />
 
           {loading ? (
@@ -114,7 +140,7 @@ export function HomePage({ go }: { go: Navigate }) {
                 <Image systemName="tray" font="title" foregroundStyle={palette.tertiaryLabel} />
                 <Text font="headline">目录里还没有模块</Text>
                 <Text font="caption" foregroundStyle={palette.secondaryLabel} multilineTextAlignment="leading">
-                  把 .sgmodule 文件放进模块目录，或从链接安装一个本地模块。
+                  把 .sgmodule / .plugin / .stoverride 文件放进模块目录，或从链接安装一个本地模块。
                 </Text>
                 <Button title="从链接安装" systemImage="link.badge.plus" buttonStyle="glassProminent" action={() => go({ name: "add" })} />
               </VStack>
@@ -148,7 +174,7 @@ export function HomePage({ go }: { go: Navigate }) {
           </GlassCard>
 
           <Text font="caption2" foregroundStyle={palette.tertiaryLabel} multilineTextAlignment="leading">
-            v3.3.0 · 更新逻辑与 Script-Hub 的 SurgeModuleTool 一致
+            v3.4.0 · 对齐 Script-Hub 的 Surge / Loon / Stash / Shadowrocket 四种目标
           </Text>
         </VStack>
       </ScrollView>

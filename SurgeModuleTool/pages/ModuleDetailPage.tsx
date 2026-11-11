@@ -2,16 +2,26 @@ import { Button, HStack, Image, Rectangle, ScrollView, Spacer, Text, VStack, ZSt
 import { GlassCard } from "../components/GlassCard"
 import { GlassText } from "../components/GlassText"
 import { StatusBadge } from "../components/StatusBadge"
+import { TargetBadge } from "../components/TargetBadge"
 import { childToolbar } from "../components/TopToolbar"
+import { TARGETS } from "../constants/targets"
 import { useLibrary } from "../contexts/LibraryContext"
 import { fullFillFrame, leadingFillFrame, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
 import { readLocalModuleEntry, shareFile } from "../services/moduleService"
 import type { Navigate } from "../types"
 import { formatBytes, hostOf, relativeTime } from "../utils/moduleContent"
 
+/** 各 App 本地文件的导入提示 */
+const IMPORT_HINT: Record<string, string> = {
+  surge: "Surge：远程模块用 surge:///install-module 导入；本地文件可分享给 Surge。",
+  loon: "Loon：远程插件用 loon://import?plugin=；本地插件用页面上的「导入 Loon(本地插件)」，或分享本地文件后在插件页导入。",
+  stash: "Stash：远程覆写用 stash://install-override；本地覆写用页面上的「导入 Stash(本地覆写)」，或分享本地文件安装。",
+  shadowrocket: "Shadowrocket：远程模块用 shadowrocket://install?module=；本地模块用页面上的「导入 Shadowrocket(本地模块)」，或在「配置 > 模块」新建并粘贴内容。",
+}
+
 /** 模块详情 */
 export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
-  const { modules, busy, refresh, updateOne, remove, showNotice } = useLibrary()
+  const { modules, busy, refresh, updateOne, importOne, remove, showNotice } = useLibrary()
   // 列表可能还没刷新到刚下载的文件，这里回退到直接读盘，避免误报“模块不存在”
   const entry = useMemo(
     () => modules.find(item => item.path === path) ?? readLocalModuleEntry(path),
@@ -47,6 +57,8 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
     )
   }
 
+  const info = TARGETS[entry.target]
+
   return (
     <ZStack>
       <Rectangle fill={pageGradient} ignoresSafeArea />
@@ -61,10 +73,9 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
           <GlassCard sensoryFeedback={{ trigger: entry.modifiedAt, feedback: "success" }}>
             <HStack spacing={spacing.md} alignment="top" frame={leadingFillFrame}>
               <Image
-                systemName={entry.hasSubscription ? "square.stack.3d.up.fill" : "doc.text"}
-                font="title"
-                foregroundStyle={entry.hasSubscription ? palette.accent : palette.secondaryLabel}
-                symbolEffect="scale"
+                imageUrl={info.iconUrl}
+                resizable={true}
+                frame={{ width: 30, height: 30 }}
               />
               <VStack alignment="leading" spacing={4} frame={leadingFillFrame}>
                 <Text font="title3" fontWeight="semibold" contentTransition="opacity">{entry.name}</Text>
@@ -75,12 +86,13 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
                   contentTransition="opacity"
                   animation={{ animation: motion.quick, value: entry.desc }}
                 >
-                  {entry.desc || "（模块没有描述）"}
+                  {entry.desc || `（${info.app} ${info.kind}没有描述）`}
                 </Text>
               </VStack>
             </HStack>
 
             <HStack spacing={spacing.sm} frame={leadingFillFrame}>
+              <TargetBadge target={entry.target} />
               {entry.status === "updating" ? (
                 <StatusBadge text="更新中…" color={palette.accent} />
               ) : entry.status === "failed" ? (
@@ -105,14 +117,26 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
                 </HStack>
               </Button>
               <Button
-                title="分享 / 导入 Surge"
-                systemImage="square.and.arrow.up"
+                title={`远程导入 ${info.app}`}
+                systemImage="arrow.down.to.line"
                 buttonStyle="glass"
-                action={() => {
-                  void shareFile(entry.path).catch(error => showNotice(`分享失败：${error}`))
-                }}
+                disabled={busy || !entry.hasSubscription}
+                action={() => void importOne(entry)}
               />
             </HStack>
+
+            <Button
+              title={`分享本地${info.kind}`}
+              systemImage="square.and.arrow.up"
+              buttonStyle="glass"
+              action={() => {
+                void shareFile(entry.path).catch(error => showNotice(`分享失败：${error}`))
+              }}
+            />
+
+            <Text font="caption2" foregroundStyle={palette.tertiaryLabel}>
+              {IMPORT_HINT[entry.target]}
+            </Text>
           </GlassCard>
 
           <GlassCard>
@@ -136,6 +160,9 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
               <Text font="caption" monospaced lineLimit={2}>{entry.fileName} · {formatBytes(entry.size)}</Text>
               <Text font="caption2" foregroundStyle={palette.tertiaryLabel} lineLimit={2}>{hostOf(entry.subscribedUrl) || entry.path}</Text>
             </GlassText>
+            <Text font="caption2" foregroundStyle={palette.tertiaryLabel}>
+              {info.app} 的{info.kind}格式，后缀 {info.extension}，target={info.scriptHubTarget}
+            </Text>
           </GlassCard>
 
           <GlassCard>

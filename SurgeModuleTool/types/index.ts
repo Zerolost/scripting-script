@@ -1,5 +1,28 @@
 // 数据类型定义
 
+/**
+ * 目标 App。Script-Hub 的 target 取值：
+ * surge-module / loon-plugin / stash-stoverride / shadowrocket-module
+ */
+export type TargetId = "surge" | "loon" | "stash" | "shadowrocket"
+
+/** 单个目标 App 的元信息 */
+export type TargetInfo = {
+  id: TargetId
+  /** App 名称 */
+  app: string
+  /** 该 App 里这类文件的叫法：模块 / 插件 / 覆写 */
+  kind: string
+  /** 文件后缀，含点 */
+  extension: string
+  /** Script-Hub 的 target 参数值 */
+  scriptHubTarget: string
+  /** 该 App 的远程导入 URL Scheme 前缀 */
+  remoteScheme: string
+  /** App 透明图标（PNG 远程地址） */
+  iconUrl: string
+}
+
 /** 模块文件解析出的头部信息 */
 export type ModuleHeader = {
   /** #!name 的值 */
@@ -33,6 +56,8 @@ export type ModuleEntry = {
   modifiedAt: number
   /** 是否包含可更新的订阅链接 */
   hasSubscription: boolean
+  /** 该文件属于哪个目标 App */
+  target: TargetId
   /** 最近一次操作状态 */
   status: ModuleStatus
   /** 失败原因 */
@@ -75,7 +100,7 @@ export type FolderState = {
 /** 应用内路由 */
 export type Route =
   | { name: "home" }
-  | { name: "add"; url?: string; moduleName?: string }
+  | { name: "add"; url?: string; moduleName?: string; target?: TargetId }
   | { name: "detail"; path: string }
   | { name: "settings" }
 

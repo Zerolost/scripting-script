@@ -3,7 +3,7 @@ import { LibraryProvider } from "./contexts/LibraryContext"
 import { loadSettings } from "./services/settingsStore"
 import { ToastHost } from "./components/ToastHost"
 import { fullFillFrame } from "./design/AllPatternDesign"
-import type { Navigate, Route } from "./types"
+import type { Navigate, Route, TargetId } from "./types"
 import { HomePage } from "./pages/HomePage"
 import { AddModulePage } from "./pages/AddModulePage"
 import { ModuleDetailPage } from "./pages/ModuleDetailPage"
@@ -32,13 +32,17 @@ function decodeRoute(raw: string): Route | null {
 export function App({
   initialUrl,
   initialName,
+  initialTarget,
 }: {
   initialUrl?: string
   initialName?: string
+  initialTarget?: TargetId
 }) {
   const [settings] = useState(() => loadSettings())
   const path = useObservable<string[]>(
-    initialUrl ? [encodeRoute({ name: "add", url: initialUrl, moduleName: initialName })] : []
+    initialUrl
+      ? [encodeRoute({ name: "add", url: initialUrl, moduleName: initialName, target: initialTarget })]
+      : []
   )
 
   // 系统滑入动画与返回手势
@@ -60,7 +64,7 @@ export function App({
     }
     switch (route.name) {
       case "add":
-        return <AddModulePage go={go} initialUrl={route.url} initialName={route.moduleName} />
+        return <AddModulePage go={go} initialUrl={route.url} initialName={route.moduleName} initialTarget={route.target} />
       case "detail":
         return <ModuleDetailPage go={go} path={route.path} />
       case "settings":

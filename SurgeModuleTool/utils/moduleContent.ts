@@ -1,5 +1,6 @@
 import { IGNORED_EXTENSIONS } from "../constants"
-import type { ModuleHeader } from "../types"
+import type { ModuleHeader, TargetId } from "../types"
+import { detectTargetFromFileName } from "./targets"
 
 /** 匹配 #!name 行 */
 const NAME_RE = /^#!\s*name\s*=\s*(.*?)\s*$/im
@@ -7,6 +8,8 @@ const NAME_RE = /^#!\s*name\s*=\s*(.*?)\s*$/im
 const DESC_RE = /^#!\s*desc\s*=\s*(.*?)\s*$/im
 /** 匹配 #SUBSCRIBED 行 */
 const SUBSCRIBED_RE = /^#SUBSCRIBED\s+(.*?)\s*$/im
+/** 匹配本工具写入的目标标记行 */
+const TARGET_MARKER_RE = /^#\s*@target\s+([a-z-]+)\s*$/im
 /** 匹配所有 #! 指令行 */
 const DIRECTIVE_RE = /^#!.+$/gm
 
@@ -20,15 +23,157 @@ export function stripStamp(desc: string): string {
   return desc.replace(/^🔗\s*\[[^\]]*\]\s*/, "").trim()
 }
 
-/** 解析模块头部信息 */
-export function parseModuleHeader(raw: string): ModuleHeader {
+/** 去掉 YAML 值两侧的引号 */
+function unquote(value: string): string {
+  const text = value.trim()
+  if (text.length >= 2) {
+    const first = text[0]
+    const last = text[text.length - 1]
+    if ((first === "'" && last === "'") || (first === '"' && last === '"')) {
+      return text.slice(1, -1)
+    }
+  }
+  return text
+}
+
+/**
+ * 只解析 YAML 头部的 name / desc，不引入完整 YAML 解析器。
+ * Stash 覆写由 Script-Hub 输出为 `name: |-` 这种块标量，需要按缩进收集。
+ */
+export function parseYamlHeader(raw: string): { name: string; desc: string } {
+  const lines = normalizeNewlines(raw).split("\n")
+  const result: Record<string, string> = {}
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i]
+    if (!line || /^\s/.test(line) || line.startsWith("#")) {
+      continue
+    }
+    const match = line.match(/^(name|desc)\s*:\s*(.*)$/)
+    if (!match) {
+      continue
+    }
+    const key = match[1]
+    const value = match[2].trim()
+
+    // 块标量：|、|-、>、>-
+    if (/^[|>][+-]?$/.test(value)) {
+      const parts: string[] = []
+      let j = i + 1
+      while (j < lines.length) {
+        const next = lines[j]
+        if (next.trim() === "") {
+          parts.push("")
+          j += 1
+          continue
+        }
+        if (!/^\s/.test(next)) {
+          break
+        }
+        parts.push(next.trim())
+        j += 1
+      }
+      result[key] = parts.join(" ").trim()
+      i = j - 1
+      continue
+    }
+
+    result[key] = unquote(value)
+  }
+
+  return { name: result.name ?? "", desc: result.desc ?? "" }
+}
+
+/** 判断文本是否像一份 Stash 覆写（YAML，且不是 #! 开头的模块） */
+export function isStashOverride(raw: string): boolean {
   const content = normalizeNewlines(raw)
+  if (NAME_RE.test(content)) {
+    return false
+  }
+  return /^name\s*:/m.test(content) || /^(rules|http|scriptings|mitm|proxy-groups)\s*:/m.test(content)
+}
+
+/** 读取文件里由本工具写入的目标标记 */
+export function readTargetMarker(raw: string): TargetId | null {
+  const match = normalizeNewlines(raw).match(TARGET_MARKER_RE)
+  if (!match) {
+    return null
+  }
+  switch (match[1].toLowerCase()) {
+    case "surge": return "surge"
+    case "loon": return "loon"
+    case "stash": return "stash"
+    case "shadowrocket": return "shadowrocket"
+    default: return null
+  }
+}
+
+/** 只根据内容判断目标 App（能识别 Stash 覆写与目标标记） */
+export function detectTargetFromContent(raw: string): TargetId | null {
+  const marker = readTargetMarker(raw)
+  if (marker) {
+    return marker
+  }
+  if (isStashOverride(raw)) {
+    return "stash"
+  }
+  return null
+}
+
+/**
+ * 综合判断目标 App：
+ * 文件内的目标标记 > 非歧义后缀 > Stash YAML 特征 > 调用方提示 > 后缀 > Surge
+ */
+export function resolveTarget(raw: string, fileName?: string, hint?: TargetId | null): TargetId {
+  const marker = readTargetMarker(raw)
+  if (marker) {
+    return marker
+  }
+  if (fileName) {
+    const byExt = detectTargetFromFileName(fileName)
+    if (byExt && byExt !== "surge") {
+      return byExt
+    }
+  }
+  if (isStashOverride(raw)) {
+    return "stash"
+  }
+  if (hint) {
+    return hint
+  }
+  if (fileName) {
+    const byExt = detectTargetFromFileName(fileName)
+    if (byExt) {
+      return byExt
+    }
+  }
+  return "surge"
+}
+
+/** 解析模块头部信息 */
+export function parseModuleHeader(raw: string, target?: TargetId): ModuleHeader {
+  const content = normalizeNewlines(raw)
+  const resolved = target ?? resolveTarget(content)
   const nameMatch = content.match(NAME_RE)
   const descMatch = content.match(DESC_RE)
   const subscribedMatch = content.match(SUBSCRIBED_RE)
-  const rawDesc = descMatch ? descMatch[1].trim() : ""
+
+  let name = nameMatch ? nameMatch[1].trim() : ""
+  let rawDesc = descMatch ? descMatch[1].trim() : ""
+
+  // Stash 覆写用 YAML 的 name / desc
+  if (resolved === "stash") {
+    const yaml = parseYamlHeader(content)
+    if (yaml.name) {
+      name = yaml.name
+    }
+    if (yaml.desc) {
+      rawDesc = yaml.desc
+    }
+  }
+
   return {
-    name: nameMatch ? nameMatch[1].trim() : "",
+    name,
     desc: stripStamp(rawDesc),
     rawDesc,
     subscribedUrl: subscribedMatch ? subscribedMatch[1].trim() : null,
@@ -40,9 +185,22 @@ export function extractSubscribedUrl(raw: string): string | null {
   return parseModuleHeader(raw).subscribedUrl
 }
 
-/** 判断文本是否像一份合法的 Surge 模块（至少要有 #!name） */
-export function isModuleContent(raw: string): boolean {
-  return NAME_RE.test(normalizeNewlines(raw))
+/** 判断文本是否像一份合法的模块（Surge / Loon / Shadowrocket 用 #!name，Stash 用 YAML name） */
+export function isModuleContent(raw: string, target?: TargetId): boolean {
+  const content = normalizeNewlines(raw)
+  if (!content.trim()) {
+    return false
+  }
+  if (target === "stash") {
+    return isStashOverride(content) || /^#SUBSCRIBED\s/m.test(content)
+  }
+  if (NAME_RE.test(content)) {
+    return true
+  }
+  if (!target) {
+    return isStashOverride(content)
+  }
+  return false
 }
 
 /** 在最后一个 #! 指令行之后插入内容 */
@@ -65,17 +223,32 @@ export function formatStamp(date: Date): string {
   return date.toLocaleString()
 }
 
+/** 移除旧的订阅链接、链接标题与目标标记 */
+function removeMarkers(body: string): string {
+  const cleaned = body
+    .replace(/^#SUBSCRIBED.*$/gim, "")
+    .replace(/^#\s*🔗\s*模块链接.*$/gim, "")
+    .replace(/^#\s*@target\s+\S+\s*$/gim, "")
+  return cleaned.replace(/\n{3,}/g, "\n\n").replace(/^\n+/, "")
+}
+
 /**
- * 把远端模块内容合成为本地模块内容。
- * 1. 移除旧的 #SUBSCRIBED 与 “# 🔗 模块链接” 区块
- * 2. 在最后一条 #! 指令后插入新的链接区块
- * 3. 把 #!desc 改写为 “🔗 [时间] 原描述”
+ * 把远端内容合成为本地模块内容。
+ * Surge / Loon / Shadowrocket：在最后一条 #! 指令后插入链接区块，并给 #!desc 加时间戳。
+ * Stash：YAML 不能乱改字段，只在文件顶部写注释。
  */
-export function composeUpdatedContent(remote: string, sourceUrl: string, at: Date = new Date()): string {
-  let body = normalizeNewlines(remote)
-  body = body.replace(/^#SUBSCRIBED.*$/gim, "")
-  body = body.replace(/^#\s*🔗\s*模块链接.*$/gim, "")
-  body = body.replace(/\n{3,}/g, "\n\n")
+export function composeUpdatedContent(
+  remote: string,
+  sourceUrl: string,
+  target: TargetId = "surge",
+  at: Date = new Date()
+): string {
+  let body = removeMarkers(normalizeNewlines(remote))
+
+  if (target === "stash") {
+    const header = `# 🔗 模块链接\n#SUBSCRIBED ${sourceUrl}\n# @target stash\n\n`
+    return `${header}${body.replace(/\s+$/, "")}\n`
+  }
 
   if (!DESC_RE.test(body)) {
     const nameLine = body.match(/^#!\s*name\s*=.*$/im)
@@ -87,7 +260,10 @@ export function composeUpdatedContent(remote: string, sourceUrl: string, at: Dat
     }
   }
 
-  body = insertAfterLastDirective(body, `\n\n# 🔗 模块链接\n#SUBSCRIBED ${sourceUrl}\n`)
+  body = insertAfterLastDirective(
+    body,
+    `\n\n# 🔗 模块链接\n#SUBSCRIBED ${sourceUrl}\n# @target ${target}\n`
+  )
   body = body.replace(/\n{3,}/g, "\n\n")
   body = body.replace(/^#!\s*desc\s*=\s*/im, `#!desc=🔗 [${formatStamp(at)}] `)
   return `${body.replace(/\s+$/, "")}\n`
@@ -120,7 +296,7 @@ export function deriveNameFromUrl(url: string): string {
   } catch {
     decoded = segment
   }
-  const name = decoded.replace(/\.(sgmodule|module|snippet|conf)$/i, "")
+  const name = decoded.replace(/\.(sgmodule|plugin|stoverride|module|snippet|conf)$/i, "")
   return toValidFileName(name)
 }
 

@@ -1,4 +1,5 @@
 import type { Color, CommonViewProps, LinearGradient, Shape, ShapeStyle } from "scripting"
+import type { TargetId } from "../types"
 
 export const palette = {
   accent: "#0A84FF" as Color,
@@ -13,6 +14,14 @@ export const palette = {
   hairline: "separator" as Color,
   secondaryLabel: "secondaryLabel" as Color,
   tertiaryLabel: "tertiaryLabel" as Color,
+}
+
+/** 目标 App 的强调色，用于徽标与图标 */
+export const targetTint: Record<TargetId, Color> = {
+  surge: "#0A84FF" as Color,
+  loon: "#BF5AF2" as Color,
+  stash: "#30D158" as Color,
+  shadowrocket: "#FF9F0A" as Color,
 }
 
 export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 22, xxl: 30 }
