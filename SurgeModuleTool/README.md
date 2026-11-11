@@ -71,16 +71,20 @@ https://raw.githubusercontent.com/Zerolost/scripting-script/main/SurgeModuleTool
 
 ## 实测拦截
 
-1. Surge 开启代理，MITM 证书已信任，模块已启用
-2. Safari 打开 `https://script.hub`
-3. 选一个脚本，点「导入 Surge(本地模块 需配合 Scriptable)」
-4. 应该直接打开 Scripting，而不是 Scriptable
-
-也可以打开仓库自带的测试页验证浏览器脚本：
+Script Hub 生成的链接是：
 
 ```text
-https://raw.githack.com/Zerolost/scripting-script/main/SurgeModuleTool/scheme-test.html
+result = http://script.hub/file/_start_/<源链接>/_end_/<文件名>?<参数>
+scriptable:///run/SurgeModuleTool?url=<encodeURIComponent(result)>&name=<encodeURIComponent(filename)>
 ```
+
+这条 `<a>` 带 `target="_blank"`。iOS Safari 在新建标签页里打开自定义协议会直接报「网址无效」，所以模块必须把 target 去掉（v3 已包含）。
+
+1. 在 **Surge** 里安装/更新 `Scriptable2Scripting.sgmodule`（不是 Scripting 内置代理）
+2. 信任 Surge 的 MITM 证书，开启代理与 MITM
+3. Safari 打开 `https://script.hub`，选脚本 → 「导入 Surge(本地模块 需配合 Scriptable)」
+
+也可以不用 Surge：在 Safari 扩展里启用本项目的浏览器脚本 v1.5.0，它会在点击时 `preventDefault` 并跳转，不依赖 VPN。
 
 ## 结构
 

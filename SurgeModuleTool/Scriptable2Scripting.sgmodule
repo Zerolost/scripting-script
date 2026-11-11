@@ -1,5 +1,5 @@
 #!name=Scriptable 链接转 Scripting
-#!desc=只 MITM script.hub（Script Hub），改写 scriptable:// 链接并去掉 target=_blank，避免 Safari 新标签打开自定义协议时报“网址无效”。
+#!desc=v3：只 MITM script.hub，改写 scriptable:// 并去掉 target=_blank（Safari 新标签无法打开自定义协议）。
 #!arguments=hosts:script.hub
 #!arguments-desc=需要拦截的域名，逗号分隔，默认只有 script.hub。
 #!requirement=CORE_VERSION>=20
