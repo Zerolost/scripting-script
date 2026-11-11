@@ -7,7 +7,7 @@
   },
   "remoteDefinitionId" : null,
   "version" : "3.2.0",
-  "name" : "1",
+  "name" : "SurgeModuleTool",
   "intentInputTypes" : [
     "texts",
     "urls"

@@ -14,6 +14,8 @@ https://github.com/Zerolost/scripting-script/tree/main/SurgeModuleTool
 - **更新单个**：详情页更新、分享到 Surge、复制订阅链接、删除
 - **从链接安装**：下载远端模块并保存为本地 `.sgmodule`
 - **URL Scheme**：`scripting://run/SurgeModuleTool?url=&name=`
+
+> 真正决定 URL Scheme 的是 `script.json` 里的 `name`，必须为 `SurgeModuleTool`（目录名可以不同）。否则 `scripting://run/...` 会提示找不到脚本。
 - **目录书签**：选一次目录，重启仍可读写
 - **重载 Surge**：请求 `http://script.hub/reload`
 
