@@ -1,7 +1,7 @@
 #!name=Scriptable 链接转 Scripting
-#!desc=v3：只 MITM script.hub，改写 scriptable:// 并去掉 target=_blank（Safari 新标签无法打开自定义协议）。
-#!arguments=hosts:script.hub
-#!arguments-desc=需要拦截的域名，逗号分隔，默认只有 script.hub。
+#!desc=v4：MITM scripthub.vercel.app（官方）与 script.hub（镜像），改写 scriptable:// 并去掉 target=_blank。
+#!arguments=hosts:scripthub.vercel.app, script.hub
+#!arguments-desc=需要拦截的域名，逗号分隔；默认是官方站与镜像站。
 #!requirement=CORE_VERSION>=20
 
 [Body Rewrite]

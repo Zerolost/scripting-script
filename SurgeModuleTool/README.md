@@ -32,23 +32,24 @@ https://github.com/Zerolost/scripting-script/tree/main/SurgeModuleTool
 
 ## Surge 模块
 
-真正的 Script Hub 在 **`script.hub`**（不是 `script-hub.netlify.app`）。它的源码里就是这一段：
+真正的 Script Hub 是 **`https://scripthub.vercel.app`**（`script.hub` 是它使用的镜像/文件域）。官方页面源码里就是这段：
 
 ```html
 <a :href="'scriptable:///run/SurgeModuleTool?url=' + encodeURIComponent(result) ...">导入 Surge(本地模块 需配合 Scriptable)</a>
 ```
 
-模块只对这个域名做 MITM：
+模块只对这两个域名做 MITM：
 
 ```ini
-#!arguments=hosts:script.hub
+#!arguments=hosts:scripthub.vercel.app, script.hub
 
 [MITM]
 hostname = %APPEND% {{{hosts}}}
 skip-server-cert-verify = %APPEND% script.hub
 ```
 
-- `script.hub` 的上游证书是自签的，所以需要 `skip-server-cert-verify`
+- `scripthub.vercel.app` 证书正常，正常解密
+- `script.hub` 是转换结果的文件域，上游证书自签，所以需要 `skip-server-cert-verify`
 - 只有 `hosts` 里列出的域名会被解密，不会抓其他流量
 - 首次使用必须在 Surge 里安装并信任 MITM 证书，否则 `https_decryption` 会一直是 `not_trusted`
 
@@ -82,7 +83,7 @@ scriptable:///run/SurgeModuleTool?url=<encodeURIComponent(result)>&name=<encodeU
 
 1. 在 **Surge** 里安装/更新 `Scriptable2Scripting.sgmodule`（不是 Scripting 内置代理）
 2. 信任 Surge 的 MITM 证书，开启代理与 MITM
-3. Safari 打开 `https://script.hub`，选脚本 → 「导入 Surge(本地模块 需配合 Scriptable)」
+3. Safari 打开 `https://scripthub.vercel.app`，选脚本 → 「导入 Surge(本地模块 需配合 Scriptable)」
 
 也可以不用 Surge：在 Safari 扩展里启用本项目的浏览器脚本 v1.5.0，它会在点击时 `preventDefault` 并跳转，不依赖 VPN。
 
