@@ -52,6 +52,17 @@ skip-server-cert-verify = %APPEND% script.hub
 - 只有 `hosts` 里列出的域名会被解密，不会抓其他流量
 - 首次使用必须在 Surge 里安装并信任 MITM 证书，否则 `https_decryption` 会一直是 `not_trusted`
 
+**实测发现的两个真实问题**
+
+1. Safari 扩展里一直跑的是旧构建：`.build/1/browser.js` 还是 v1.2.0，`@match` 只有 github/raw/script-hub，所以根本不会在 `script.hub` 上执行。改完 `browser.tsx` 必须重新运行一次项目才会重建。
+2. Script Hub 的导入链接带 `target="_blank"`，iOS Safari 在新建标签页里打开自定义协议会直接报“网址无效”。模块里加了一条规则把它去掉：
+
+```ini
+http-response ^https?:// (:href="[^"]*SurgeModuleTool[^"]*")\s+target="_blank" $1
+```
+
+当前模块状态：`healthy — 3 rewrite(s), 1 MitM host(s)`。
+
 安装：
 
 ```text

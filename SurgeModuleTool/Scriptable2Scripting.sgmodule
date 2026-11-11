@@ -1,11 +1,12 @@
 #!name=Scriptable 链接转 Scripting
-#!desc=只 MITM script.hub（Script Hub），把它生成的 scriptable:// 安装链接改写为 scripting://。
+#!desc=只 MITM script.hub（Script Hub），改写 scriptable:// 链接并去掉 target=_blank，避免 Safari 新标签打开自定义协议时报“网址无效”。
 #!arguments=hosts:script.hub
-#!arguments-desc=需要拦截的域名，逗号分隔，默认只有 script.hub。只有这里列出的域名会被解密和改写。
+#!arguments-desc=需要拦截的域名，逗号分隔，默认只有 script.hub。
 #!requirement=CORE_VERSION>=20
 
 [Body Rewrite]
 http-response ^https?:// scriptable:///run_single/ scripting://run_single/ scriptable:///run/ scripting://run/ scriptable:/// scripting:// scriptable:// scripting://
+http-response ^https?:// (:href="[^"]*SurgeModuleTool[^"]*")\s+target="_blank" $1
 
 [Header Rewrite]
 http-response ^https?:// header-replace-regex Location scriptable:/// scripting://

@@ -1,13 +1,15 @@
-// @ts-nocheck
 // ==UserScript==
 // @name         Scriptable → Scripting 链接跳转
 // @namespace    surge-module-tool
-// @version      1.4.0
+// @version      1.5.0
 // @description  把 Script Hub 等页面里的 scriptable:// 安装链接改写为 scripting://
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
+
+// @ts-nocheck
+// 注意：@ts-nocheck 必须放在元数据块之后，否则 userscript 无法识别 @match。
 
 // 用户脚本只在本地改写 <a>，不发起网络请求。
 (function () {
