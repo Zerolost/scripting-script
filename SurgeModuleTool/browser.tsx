@@ -1,10 +1,11 @@
 // ==UserScript==
 // @name         Scriptable → Scripting 链接跳转
 // @namespace    surge-module-tool
-// @version      1.5.0
+// @version      1.6.0
 // @description  把 Script Hub 等页面里的 scriptable:// 安装链接改写为 scripting://
 // @match        *://*/*
 // @run-at       document-start
+// @inject-into  content
 // @grant        none
 // ==/UserScript==
 

@@ -40,29 +40,36 @@ https://github.com/Zerolost/scripting-script/tree/main/SurgeModuleTool
 <a :href="'scriptable:///run/SurgeModuleTool?url=' + encodeURIComponent(result) ...">导入 Surge(本地模块 需配合 Scriptable)</a>
 ```
 
-模块只对这两个域名做 MITM：
+模块只对官方站做 MITM，不再碰 `script.hub`（转换结果走的是 `http://script.hub/`，不需要解密）：
 
 ```ini
-#!arguments=hosts:scripthub.vercel.app, script.hub
-
 [MITM]
-hostname = %APPEND% {{{hosts}}}
-skip-server-cert-verify = %APPEND% script.hub
+hostname = %APPEND% scripthub.vercel.app
 ```
-
-- `scripthub.vercel.app` 证书正常，正常解密
-- `script.hub` 是转换结果的文件域，上游证书自签，所以需要 `skip-server-cert-verify`
-- 只有 `hosts` 里列出的域名会被解密，不会抓其他流量
 - 首次使用必须在 Surge 里安装并信任 MITM 证书，否则 `https_decryption` 会一直是 `not_trusted`
 
-**实测发现的两个真实问题**
+**三个真实问题**
 
-1. Safari 扩展里一直跑的是旧构建：`.build/1/browser.js` 还是 v1.2.0，`@match` 只有 github/raw/script-hub，所以根本不会在 `script.hub` 上执行。改完 `browser.tsx` 必须重新运行一次项目才会重建。
-2. Script Hub 的导入链接带 `target="_blank"`，iOS Safari 在新建标签页里打开自定义协议会直接报“网址无效”。模块里加了一条规则把它去掉：
+1. Safari 扩展里跑的是旧构建（v1.2.0，只匹配 github/raw），改完 `browser.tsx` 必须重新运行项目才会重建。现为 v1.6.0，`@match *://*/*` + `@inject-into content`。
+2. Script Hub 的导入链接带 `target="_blank"`，iOS Safari 在新标签页里打开自定义协议直接报「网址无效」。
+3. `#!arguments` 用逗号分隔参数，`hosts:scripthub.vercel.app, script.hub` 会被拆成非法参数名 `script.hub`，所以去掉了参数表，直接写死 hostname。
+
+完整规则：
 
 ```ini
-http-response ^https?:// (:href="[^"]*SurgeModuleTool[^"]*")\s+target="_blank" $1
+[Body Rewrite]
+http-response ^https?://scripthub\.vercel\.app/ scriptable:///run_single/ scripting://run_single/ scriptable:///run/ scripting://run/ scriptable:/// scripting:// scriptable:// scripting://
+http-response ^https?://scripthub\.vercel\.app/ (:href="[^"]*SurgeModuleTool[^"]*")\s+target="_blank" $1
+http-response ^https?://scripthub\.vercel\.app/ 需配合 Scriptable 需配合 Scripting
+
+[Header Rewrite]
+http-response ^https?://scripthub\.vercel\.app/ header-replace-regex Location scriptable:/// scripting://
+
+[MITM]
+hostname = %APPEND% scripthub.vercel.app
 ```
+
+用官方页面真实 HTML 逐条验证：`scriptable://` 1 处 → 0 处，`SurgeModuleTool` 链接的 `target` 被移除，按钮文案变为「需配合 Scripting」。
 
 当前模块状态：`healthy — 3 rewrite(s), 1 MitM host(s)`。
 
@@ -85,7 +92,9 @@ scriptable:///run/SurgeModuleTool?url=<encodeURIComponent(result)>&name=<encodeU
 
 1. 在 **Surge** 里安装/更新 `Scriptable2Scripting.sgmodule`（不是 Scripting 内置代理）
 2. 信任 Surge 的 MITM 证书，开启代理与 MITM
-3. Safari 打开 `https://scripthub.vercel.app`，选脚本 → 「导入 Surge(本地模块 需配合 Scriptable)」
+**怎么判断模块有没有生效**：v5 会把页面里的大写 `Scriptable` 改成 `Scripting`。如果按钮还是「需配合 Scriptable」，说明模块根本没被应用（没装、没开、没解密）；如果变成「需配合 Scripting」但点击仍报错，那就是链接本身的问题。
+
+3. Safari 打开 `https://scripthub.vercel.app`，选脚本 → 「导入 Surge(本地模块 需配合 Scripting)」
 
 也可以不用 Surge：在 Safari 扩展里启用本项目的浏览器脚本 v1.5.0，它会在点击时 `preventDefault` 并跳转，不依赖 VPN。
 
