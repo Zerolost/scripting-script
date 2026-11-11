@@ -1,11 +1,11 @@
 #!name=Scriptable 链接转 Scripting
-#!desc=v6：只 MITM scripthub.vercel.app。把 Script Hub 的 scriptable:// 安装链接改写为 scripting://，去掉 target="_blank"，并把按钮文案改成 Scripting 作为生效标记。
+#!desc=v7：只 MITM scripthub.vercel.app。把 scriptable:// 安装链接改写为 scripting://，去掉 target="_blank"，按钮文案改为 Scripting 作为生效标记。
 #!requirement=CORE_VERSION>=20
 
 [Body Rewrite]
 http-response ^https?://scripthub\.vercel\.app/ scriptable:///run_single/ scripting://run_single/ scriptable:///run/ scripting://run/ scriptable:/// scripting:// scriptable:// scripting://
 http-response ^https?://scripthub\.vercel\.app/ (:href="[^"]*SurgeModuleTool[^"]*")\s+target="_blank" $1
-http-response ^https?://scripthub\.vercel\.app/ 需配合 Scriptable 需配合 Scripting
+http-response ^https?://scripthub\.vercel\.app/ Scriptable\)</a> Scripting)</a>
 
 [Header Rewrite]
 http-response ^https?://scripthub\.vercel\.app/ header-replace-regex Location scriptable:/// scripting://

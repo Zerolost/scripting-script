@@ -48,6 +48,15 @@ hostname = %APPEND% scripthub.vercel.app
 ```
 - 首次使用必须在 Surge 里安装并信任 MITM 证书，否则 `https_decryption` 会一直是 `not_trusted`
 
+**Surge Body Rewrite 的硬限制：token 用空格分隔，regex 和 replacement 都不能含空格。**
+
+之前写 `需配合 Scriptable 需配合 Scripting` 会被拆成两对：
+
+- `需配合` → `Scriptable`
+- `需配合` → `Scripting`
+
+于是 `需配合 Scriptable` 变成 `Scriptable Scriptable` —— 这正是你看到的文案。现改为无空格规则 `Scriptable\)</a>` → `Scripting)</a>`。
+
 **三个真实问题**
 
 1. Safari 扩展里跑的是旧构建（v1.2.0，只匹配 github/raw），改完 `browser.tsx` 必须重新运行项目才会重建。现为 v1.6.0，`@match *://*/*` + `@inject-into content`。
@@ -60,7 +69,7 @@ hostname = %APPEND% scripthub.vercel.app
 [Body Rewrite]
 http-response ^https?://scripthub\.vercel\.app/ scriptable:///run_single/ scripting://run_single/ scriptable:///run/ scripting://run/ scriptable:/// scripting:// scriptable:// scripting://
 http-response ^https?://scripthub\.vercel\.app/ (:href="[^"]*SurgeModuleTool[^"]*")\s+target="_blank" $1
-http-response ^https?://scripthub\.vercel\.app/ 需配合 Scriptable 需配合 Scripting
+http-response ^https?://scripthub\.vercel\.app/ Scriptable\)</a> Scripting)</a>
 
 [Header Rewrite]
 http-response ^https?://scripthub\.vercel\.app/ header-replace-regex Location scriptable:/// scripting://
@@ -79,6 +88,16 @@ hostname = %APPEND% scripthub.vercel.app
 https://raw.githubusercontent.com/Zerolost/scripting-script/main/SurgeModuleTool/Scriptable2Scripting.sgmodule
 ```
 
+## 主屏幕 Web App
+
+把站点「添加到主屏幕」后，iOS 会保留一份页面缓存，模块改了也不会立刻生效。处理方式：
+
+1. 长按图标删除
+2. 在 Safari 里刷新一次（确认按钮已显示「需配合 Scripting」）
+3. 重新「添加到主屏幕」
+
+主屏幕 Web App 同样走系统 VPN，模块能生效；只是它不主动重新拉取 HTML。
+
 ## 实测拦截
 
 Script Hub 生成的链接是：
@@ -88,15 +107,17 @@ result = http://script.hub/file/_start_/<源链接>/_end_/<文件名>?<参数>
 scriptable:///run/SurgeModuleTool?url=<encodeURIComponent(result)>&name=<encodeURIComponent(filename)>
 ```
 
-这条 `<a>` 带 `target="_blank"`。iOS Safari 在新建标签页里打开自定义协议会直接报「网址无效」，所以模块必须把 target 去掉（v3 已包含）。
+这条 `<a>` 带 `target="_blank"`。iOS Safari 在新建标签页里打开自定义协议会直接报「网址无效」，所以模块把 target 去掉。
 
-1. 在 **Surge** 里安装/更新 `Scriptable2Scripting.sgmodule`（不是 Scripting 内置代理）
+步骤：
+
+1. 在 **Surge** 里安装/更新 `Scriptable2Scripting.sgmodule`
 2. 信任 Surge 的 MITM 证书，开启代理与 MITM
-**怎么判断模块有没有生效**：v5 会把页面里的大写 `Scriptable` 改成 `Scripting`。如果按钮还是「需配合 Scriptable」，说明模块根本没被应用（没装、没开、没解密）；如果变成「需配合 Scripting」但点击仍报错，那就是链接本身的问题。
+3. Safari 打开 `https://scripthub.vercel.app`，选脚本 → 按钮应显示「需配合 Scripting」
 
-3. Safari 打开 `https://scripthub.vercel.app`，选脚本 → 「导入 Surge(本地模块 需配合 Scripting)」
+> 按钮文案是生效标记：仍是「需配合 Scriptable」= 模块没应用；变成「需配合 Scripting」= 已改写。
 
-也可以不用 Surge：在 Safari 扩展里启用本项目的浏览器脚本 v1.5.0，它会在点击时 `preventDefault` 并跳转，不依赖 VPN。
+也可以不用 Surge：在 Safari 扩展里启用本项目的浏览器脚本 v1.6.0，点击时 `preventDefault` 并跳转，不依赖 VPN。
 
 ## 结构
 
