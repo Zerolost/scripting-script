@@ -15,7 +15,7 @@ https://github.com/Zerolost/scripting-script/tree/main/SurgeModuleTool
 - **从链接安装**：下载远端模块并保存为本地 `.sgmodule`
 - **URL Scheme**：`scripting://run/SurgeModuleTool?url=&name=`
 
-> 真正决定 URL Scheme 的是 `script.json` 里的 `name`，必须为 `SurgeModuleTool`（目录名可以不同）。否则 `scripting://run/...` 会提示找不到脚本。
+> `script.json` 的 `name` 与脚本目录名必须一致（本仓库两者都是 `SurgeModuleTool`）。不一致时 `scripting://run/...` 可能只打开 App 而不运行脚本。
 - **目录书签**：选一次目录，重启仍可读写
 - **重载 Surge**：请求 `http://script.hub/reload`
 
@@ -108,6 +108,8 @@ scriptable:///run/SurgeModuleTool?url=<encodeURIComponent(result)>&name=<encodeU
 ```
 
 这条 `<a>` 带 `target="_blank"`。iOS Safari 在新建标签页里打开自定义协议会直接报「网址无效」，所以模块把 target 去掉。
+
+另外 Script Hub 的 `result` 是 `http://script.hub/...`，下载时必须允许明文请求（`allowInsecureRequest: true`），否则会被 ATS 拦下。
 
 步骤：
 

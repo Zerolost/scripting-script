@@ -48,6 +48,8 @@ export async function fetchModuleText(url: string, userAgent: string): Promise<s
       Pragma: "no-cache",
     },
     timeout: 25,
+    // Script Hub 的转换结果走 http://script.hub/，必须放行明文请求
+    allowInsecureRequest: true,
     debugLabel: "SurgeModuleTool",
   })
   if (!response.ok) {
