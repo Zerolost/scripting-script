@@ -21,7 +21,7 @@ import { formatBytes, hostOf, relativeTime } from "../utils/moduleContent"
 
 /** 模块详情：更新、分享、复制链接与删除 */
 export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
-  const { modules, busy, updateOne, remove, showNotice } = useLibrary()
+  const { modules, busy, refresh, updateOne, remove, showNotice } = useLibrary()
   const entry = useMemo(() => modules.find(item => item.path === path), [modules, path])
 
   if (!entry) {
@@ -33,9 +33,17 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
             navigationTitle="模块详情"
             navigationBarTitleDisplayMode="inline"
             toolbarBackgroundVisibility="hidden"
+            toolbar={{
+              topBarLeading: <Button title="返回" action={() => go({ name: "home" })} />,
+              topBarTrailing: (
+                <Button action={() => void refresh()} buttonStyle="plain">
+                  <Image systemName="arrow.clockwise" />
+                </Button>
+              ),
+            }}
             frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
           >
-            <VStack spacing={spacing.md} padding={spacing.xl}>
+            <VStack alignment="leading" spacing={spacing.md} padding={spacing.xl} frame={{ maxWidth: "infinity" }}>
               <Image systemName="questionmark.folder" font="title" foregroundStyle={palette.secondaryLabel} />
               <Text font="headline">模块不存在</Text>
               <Text font="caption" foregroundStyle={palette.secondaryLabel}>
@@ -57,9 +65,17 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
           navigationTitle="模块详情"
           navigationBarTitleDisplayMode="inline"
           toolbarBackgroundVisibility="hidden"
+          toolbar={{
+            topBarLeading: <Button title="返回" action={() => go({ name: "home" })} />,
+            topBarTrailing: (
+              <Button action={() => void refresh()} buttonStyle="plain">
+                <Image systemName="arrow.clockwise" />
+              </Button>
+            ),
+          }}
           frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
         >
-          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg}>
+          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={{ maxWidth: "infinity" }}>
             <GlassCard sensoryFeedback={{ trigger: entry.modifiedAt, feedback: "success" }}>
               <HStack spacing={spacing.md} alignment="top">
                 <Image
@@ -85,7 +101,7 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
                 <Spacer />
               </HStack>
 
-              <HStack spacing={spacing.sm}>
+              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                 {entry.status === "updating" ? (
                   <StatusBadge text="更新中…" color={palette.accent} />
                 ) : entry.status === "failed" ? (
@@ -98,7 +114,7 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
                 <StatusBadge text={relativeTime(entry.modifiedAt)} color={palette.secondaryLabel} />
               </HStack>
 
-              <HStack spacing={spacing.sm}>
+              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                 <Button
                   buttonStyle="glassProminent"
                   disabled={busy || !entry.hasSubscription}
@@ -187,8 +203,6 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
                 }}
               />
             </GlassCard>
-
-            <Button title="返回模块列表" systemImage="chevron.left" buttonStyle="glass" action={() => go({ name: "home" })} />
           </VStack>
         </ScrollView>
       </ZStack>

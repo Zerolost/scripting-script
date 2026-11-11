@@ -29,7 +29,7 @@ export function AddModulePage({
   initialUrl?: string
   initialName?: string
 }) {
-  const { addFromURL, folderPath, chooseFolder, busy } = useLibrary()
+  const { addFromURL, folderPath, chooseFolder, refresh, busy } = useLibrary()
   const [url, setUrl] = useState<string>(initialUrl ?? "")
   const [name, setName] = useState<string>(initialName ?? "")
   const [running, setRunning] = useState<boolean>(false)
@@ -70,11 +70,19 @@ export function AddModulePage({
           navigationTitle="从链接安装"
           navigationBarTitleDisplayMode="inline"
           toolbarBackgroundVisibility="hidden"
+          toolbar={{
+            topBarLeading: <Button title="返回" action={() => go({ name: "home" })} />,
+            topBarTrailing: (
+              <Button action={() => void refresh()} buttonStyle="plain">
+                <Image systemName="arrow.clockwise" />
+              </Button>
+            ),
+          }}
           frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
         >
-          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg}>
+          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={{ maxWidth: "infinity" }}>
             <GlassCard>
-              <HStack spacing={spacing.sm}>
+              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                 <Image systemName="link.badge.plus" font="title2" foregroundStyle={palette.accent} />
                 <Text font="title3" fontWeight="semibold">
                   从链接创建模块
@@ -110,7 +118,7 @@ export function AddModulePage({
                 />
               </VStack>
 
-              <HStack spacing={spacing.sm}>
+              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                 <Button
                   buttonStyle="glassProminent"
                   frame={{ maxWidth: "infinity" }}
@@ -157,7 +165,7 @@ export function AddModulePage({
                 transition={cardTransition}
                 sensoryFeedback={{ trigger: result.path, feedback: "success" }}
               >
-                <HStack spacing={spacing.sm}>
+                <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                   <Image
                     systemName="checkmark.circle.fill"
                     font="title2"
@@ -174,7 +182,7 @@ export function AddModulePage({
                   </VStack>
                   <Spacer />
                 </HStack>
-                <HStack spacing={spacing.sm}>
+                <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                   <Button
                     title="查看详情"
                     buttonStyle="glass"
@@ -212,11 +220,9 @@ export function AddModulePage({
                 }}
               />
               <Text font="caption2" foregroundStyle={palette.tertiaryLabel}>
-                配合「反劫持工具」生成的 Surge 模块或 Safari 用户脚本，网页里的 scriptable:// 会被自动改写。
+                配合「反劫持工具」生成的 Surge 模块或内置 browser.tsx，网页里的 scriptable:// 会被自动改写。
               </Text>
             </GlassCard>
-
-            <Button title="返回首页" systemImage="chevron.left" buttonStyle="glass" action={() => go({ name: "home" })} />
           </VStack>
         </ScrollView>
       </ZStack>

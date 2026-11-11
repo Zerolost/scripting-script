@@ -29,6 +29,7 @@ export function GlassCard({
       alignment="leading"
       spacing={spacingValue}
       padding={padding}
+      frame={{ maxWidth: "infinity" }}
       glassEffect={glassCard(tinted)}
       sensoryFeedback={sensoryFeedback}
       animation={animationValue === undefined ? undefined : { animation: motion.page, value: animationValue }}

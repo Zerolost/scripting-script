@@ -12,7 +12,7 @@ export function StatTile({
   tint?: Color
 }): ReturnType<typeof VStack> {
   return (
-    <VStack spacing={2} frame={{ maxWidth: "infinity" }}>
+    <VStack alignment="leading" spacing={2} frame={{ maxWidth: "infinity" }}>
       <Text
         font="caption2"
         foregroundStyle={palette.secondaryLabel}

@@ -23,7 +23,7 @@ import { shareFile } from "../services/moduleService"
 
 /** 工具页：生成 Surge 反劫持模块、Safari 用户脚本，并测试 scheme 转换 */
 export function ToolsPage({ go }: { go: Navigate }) {
-  const { folderPath, settings, showNotice, reload } = useLibrary()
+  const { folderPath, settings, refresh, showNotice, reload } = useLibrary()
   const [hostname, setHostname] = useState<string>("*")
   const [artifacts, setArtifacts] = useState<SchemeArtifacts | null>(null)
   const [running, setRunning] = useState<boolean>(false)
@@ -39,7 +39,7 @@ export function ToolsPage({ go }: { go: Navigate }) {
       const target = folderPath || (await resolveModuleFolder(settings))
       const result = await writeSchemeArtifacts(target, hostname.trim() || "*")
       void withAnimation(motion.page, () => setArtifacts(result))
-      showNotice("已生成 Surge 反劫持模块与 Safari 用户脚本")
+      showNotice("已生成 Surge 反劫持模块")
     } catch (error) {
       showNotice(`生成失败：${error instanceof Error ? error.message : String(error)}`)
     } finally {
@@ -55,11 +55,19 @@ export function ToolsPage({ go }: { go: Navigate }) {
           navigationTitle="Scheme 反劫持"
           navigationBarTitleDisplayMode="inline"
           toolbarBackgroundVisibility="hidden"
+          toolbar={{
+            topBarLeading: <Button title="返回" action={() => go({ name: "home" })} />,
+            topBarTrailing: (
+              <Button action={() => void refresh()} buttonStyle="plain">
+                <Image systemName="arrow.clockwise" />
+              </Button>
+            ),
+          }}
           frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
         >
-          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg}>
+          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={{ maxWidth: "infinity" }}>
             <GlassCard>
-              <HStack spacing={spacing.sm}>
+              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                 <Image systemName="wand.and.stars" font="title2" foregroundStyle={palette.accent} />
                 <Text font="title3" fontWeight="semibold">
                   scriptable → scripting
@@ -82,7 +90,7 @@ export function ToolsPage({ go }: { go: Navigate }) {
                 />
               </VStack>
 
-              <HStack spacing={spacing.sm}>
+              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                 <Button
                   buttonStyle="glassProminent"
                   frame={{ maxWidth: "infinity" }}
@@ -126,7 +134,7 @@ export function ToolsPage({ go }: { go: Navigate }) {
                     {artifacts.modulePath}
                   </Text>
                 </VStack>
-                <HStack spacing={spacing.sm}>
+                <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                   <Button
                     title="分享模块"
                     systemImage="square.and.arrow.up"
@@ -157,7 +165,7 @@ export function ToolsPage({ go }: { go: Navigate }) {
               <Text font="caption2" monospaced lineLimit={2} truncationMode="middle" textSelection>
                 {REMOTE_MODULE_URL}
               </Text>
-              <HStack spacing={spacing.sm}>
+              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                 <Button
                   title="安装到 Surge"
                   systemImage="arrow.down.to.line"
@@ -203,7 +211,7 @@ export function ToolsPage({ go }: { go: Navigate }) {
             <GlassCard>
               <Text font="headline">转换测试</Text>
               <TextField title="原始链接" value={testUrl} onChanged={setTestUrl} />
-              <HStack spacing={spacing.sm}>
+              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                 <Image
                   systemName={isScriptingRunUrl(converted) ? "checkmark.circle.fill" : "exclamationmark.circle"}
                   foregroundStyle={isScriptingRunUrl(converted) ? palette.success : palette.warning}
@@ -221,8 +229,6 @@ export function ToolsPage({ go }: { go: Navigate }) {
                 }}
               />
             </GlassCard>
-
-            <Button title="返回首页" systemImage="chevron.left" buttonStyle="glass" action={() => go({ name: "home" })} />
           </VStack>
           </ScrollView>
       </ZStack>

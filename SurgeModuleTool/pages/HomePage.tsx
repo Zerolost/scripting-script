@@ -4,6 +4,7 @@ import {
   HStack,
   Image,
   LazyVStack,
+  Navigation,
   NavigationStack,
   Rectangle,
   ScrollView,
@@ -54,6 +55,7 @@ function ToolRow({
 /** 首页：概览、模块列表与工具入口 */
 export function HomePage({ go }: { go: Navigate }) {
   const { modules, loading, busy, folderPath, settings, refresh, updateAll, reload, showNotice } = useLibrary()
+  const dismiss = Navigation.useDismiss()
   const [haptic, setHaptic] = useState<number>(0)
 
   const visibleModules = useMemo(
@@ -79,9 +81,17 @@ export function HomePage({ go }: { go: Navigate }) {
           navigationTitle="Surge 模块工具"
           navigationBarTitleDisplayMode="inline"
           toolbarBackgroundVisibility="hidden"
+          toolbar={{
+            topBarLeading: <Button title="关闭" action={dismiss} />,
+            topBarTrailing: (
+              <Button action={() => void refresh()} buttonStyle="plain" disabled={busy}>
+                <Image systemName="arrow.clockwise" />
+              </Button>
+            ),
+          }}
           frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
         >
-          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg}>
+          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={{ maxWidth: "infinity" }}>
             <GlassCard sensoryFeedback={{ trigger: haptic, feedback: "impactSoft" }}>
               <HStack alignment="center" spacing={spacing.sm}>
                 <StatTile label="模块" value={stats.total} tint={palette.secondaryLabel} />
@@ -95,10 +105,9 @@ export function HomePage({ go }: { go: Navigate }) {
                 />
               </HStack>
 
-              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+              <HStack spacing={spacing.sm}>
                 <Button
                   buttonStyle="glassProminent"
-                  frame={{ maxWidth: "infinity", height: 44 }}
                   disabled={busy || loading}
                   action={() => {
                     bump()
@@ -114,17 +123,7 @@ export function HomePage({ go }: { go: Navigate }) {
                     <Text contentTransition="opacity">{busy ? "更新中…" : "更新全部"}</Text>
                   </HStack>
                 </Button>
-                <Button
-                  buttonStyle="glass"
-                  frame={{ width: 44, height: 44 }}
-                  disabled={busy}
-                  action={() => {
-                    bump()
-                    void refresh()
-                  }}
-                >
-                  <Image systemName="arrow.clockwise" symbolEffect="scale" />
-                </Button>
+                <Spacer />
               </HStack>
 
               <Button
@@ -165,10 +164,10 @@ export function HomePage({ go }: { go: Navigate }) {
               </GlassCard>
             ) : visibleModules.length === 0 ? (
               <GlassCard>
-                <VStack alignment="center" spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+                <VStack alignment="leading" spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                   <Image systemName="tray" font="title" foregroundStyle={palette.tertiaryLabel} />
                   <Text font="headline">目录里还没有模块</Text>
-                  <Text font="caption" foregroundStyle={palette.secondaryLabel} multilineTextAlignment="center">
+                  <Text font="caption" foregroundStyle={palette.secondaryLabel} multilineTextAlignment="leading">
                     把 .sgmodule 文件放进模块目录，或从链接安装一个本地模块。
                   </Text>
                   <Button
@@ -246,7 +245,7 @@ export function HomePage({ go }: { go: Navigate }) {
               />
             </GlassCard>
 
-            <Text font="caption2" foregroundStyle={palette.tertiaryLabel} multilineTextAlignment="center">
+            <Text font="caption2" foregroundStyle={palette.tertiaryLabel} multilineTextAlignment="leading">
               v3.1.0 · 更新逻辑与 Script-Hub 的 SurgeModuleTool 一致
             </Text>
           </VStack>

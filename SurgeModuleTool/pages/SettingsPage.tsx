@@ -21,7 +21,7 @@ import type { Navigate } from "../types"
 
 /** 设置页：模块目录、请求头与更新行为 */
 export function SettingsPage({ go }: { go: Navigate }) {
-  const { settings, folderPath, updateSettings, chooseFolder, showNotice } = useLibrary()
+  const { settings, folderPath, updateSettings, chooseFolder, refresh, showNotice } = useLibrary()
   const [ua, setUa] = useState<string>(settings.userAgent)
   const folders = candidateFolders()
 
@@ -33,9 +33,17 @@ export function SettingsPage({ go }: { go: Navigate }) {
           navigationTitle="设置"
           navigationBarTitleDisplayMode="inline"
           toolbarBackgroundVisibility="hidden"
+          toolbar={{
+            topBarLeading: <Button title="返回" action={() => go({ name: "home" })} />,
+            topBarTrailing: (
+              <Button action={() => void refresh()} buttonStyle="plain">
+                <Image systemName="arrow.clockwise" />
+              </Button>
+            ),
+          }}
           frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
         >
-          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg}>
+          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={{ maxWidth: "infinity" }}>
             <GlassCard>
               <Text font="headline">模块目录</Text>
               <Text
@@ -48,7 +56,7 @@ export function SettingsPage({ go }: { go: Navigate }) {
               >
                 {folderPath || "尚未选择目录"}
               </Text>
-              <HStack spacing={spacing.sm}>
+              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                 <Button
                   title="选择目录"
                   systemImage="folder.badge.plus"
@@ -79,7 +87,7 @@ export function SettingsPage({ go }: { go: Navigate }) {
                     void copyPath(item.path)
                   }}
                 >
-                  <HStack spacing={spacing.sm} padding={{ vertical: 6 }}>
+                  <HStack spacing={spacing.sm} padding={{ vertical: 6 }} frame={{ maxWidth: "infinity" }}>
                     <Image systemName="folder" foregroundStyle={palette.accent} />
                     <VStack alignment="leading" spacing={2}>
                       <Text font="subheadline">{item.title}</Text>
@@ -137,7 +145,7 @@ export function SettingsPage({ go }: { go: Navigate }) {
 
             <GlassCard>
               <Text font="headline">关于</Text>
-              <HStack spacing={spacing.sm}>
+              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                 <Image systemName="info.circle" foregroundStyle={palette.secondaryLabel} />
                 <Text font="caption" foregroundStyle={palette.secondaryLabel}>
                   SurgeModuleTool for Scripting v{TOOL_VERSION}
@@ -155,8 +163,6 @@ export function SettingsPage({ go }: { go: Navigate }) {
                 }}
               />
             </GlassCard>
-
-            <Button title="返回首页" systemImage="chevron.left" buttonStyle="glass" action={() => go({ name: "home" })} />
           </VStack>
           </ScrollView>
       </ZStack>

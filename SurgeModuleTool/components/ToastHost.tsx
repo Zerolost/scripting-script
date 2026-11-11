@@ -30,7 +30,7 @@ export function ToastHost(): ReturnType<typeof VStack> {
           foregroundStyle={palette.secondaryLabel}
           padding={{ horizontal: spacing.lg, vertical: spacing.md }}
           glassEffect={glassChip(true)}
-          multilineTextAlignment="center"
+          multilineTextAlignment="leading"
           contentTransition="opacity"
           transition={Transition.opacity().combined(Transition.move("bottom"))}
           animation={{ animation: motion.quick, value: notice }}
