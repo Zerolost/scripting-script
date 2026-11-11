@@ -9,7 +9,6 @@ import {
   parseModuleHeader,
   toValidFileName,
 } from "../utils/moduleContent"
-import { buildSurgeModule, convertSchemeUrl, isScriptingRunUrl } from "../services/schemeService"
 
 let passed = 0
 const failures: string[] = []
@@ -80,35 +79,6 @@ check(
 check("模块文件判定", isModuleFileName("a.sgmodule"))
 check("忽略 js 文件", !isModuleFileName("a.js"))
 check("忽略隐藏文件", !isModuleFileName(".DS_Store"))
-
-check(
-  "转换 run",
-  convertSchemeUrl("scriptable:///run/Foo?a=1") === "scripting://run/Foo?a=1",
-  convertSchemeUrl("scriptable:///run/Foo?a=1")
-)
-check(
-  "转换 run_single",
-  convertSchemeUrl("scriptable:///run_single/Foo") === "scripting://run_single/Foo",
-  convertSchemeUrl("scriptable:///run_single/Foo")
-)
-check(
-  "转换 install",
-  convertSchemeUrl("scriptable:///install/Foo") === "scripting://install/Foo",
-  convertSchemeUrl("scriptable:///install/Foo")
-)
-check("普通文本不变", convertSchemeUrl("https://example.com") === "https://example.com")
-check("识别 scripting run", isScriptingRunUrl("scripting://run/SurgeModuleTool?url=x"))
-check("拒绝非 run", !isScriptingRunUrl("scripting://install/Foo"))
-
-const moduleText = buildSurgeModule("*")
-check("模块有元数据", moduleText.includes("#!name=") && moduleText.includes("#!desc="))
-check("模块有 Body Rewrite", moduleText.includes("[Body Rewrite]") && moduleText.includes("http-response ^https?://"))
-check(
-  "模块有 Header Rewrite",
-  moduleText.includes("[Header Rewrite]") && moduleText.includes("header-replace-regex Location")
-)
-check("模块有 MITM", moduleText.includes("[MITM]") && moduleText.includes("{{{hostname}}}"))
-check("模块含版本要求", moduleText.includes("#!requirement=CORE_VERSION>=20"))
 
 console.log(`\n通过 ${passed} 项`)
 if (failures.length > 0) {

@@ -66,12 +66,6 @@ export type UpdateSummary = {
   failed: string[]
 }
 
-/** 生成的反劫持资源 */
-export type SchemeArtifacts = {
-  modulePath: string
-  moduleContent: string
-}
-
 /** 新建 / 更新模块时可选的落盘目录 */
 export type FolderState = {
   path: string | null
@@ -84,6 +78,5 @@ export type Route =
   | { name: "add"; url?: string; moduleName?: string }
   | { name: "detail"; path: string }
   | { name: "settings" }
-  | { name: "tools" }
 
 export type Navigate = (route: Route) => void

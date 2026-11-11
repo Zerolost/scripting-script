@@ -1,11 +1,7 @@
 import { Navigation, Script } from "scripting"
 import { App } from "./app"
 
-/**
- * 入口：
- * - 直接运行 → 打开主页
- * - scripting://run/SurgeModuleTool?url=<模块链接>&name=<可选名称> → 自动安装
- */
+/**入口 */
 async function run(): Promise<void> {
   const params: Record<string, any> = Script.queryParameters ?? {}
   const rawUrl = typeof params.url === "string" ? params.url.trim() : ""

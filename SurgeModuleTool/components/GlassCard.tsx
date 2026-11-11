@@ -27,15 +27,21 @@ export function GlassCard({
   return (
     <VStack
       alignment="leading"
-      spacing={spacingValue}
+      spacing={0}
       padding={padding}
       frame={{ maxWidth: "infinity" }}
       glassEffect={glassCard(tinted)}
-      sensoryFeedback={sensoryFeedback}
-      animation={animationValue === undefined ? undefined : { animation: motion.page, value: animationValue }}
-      transition={transition}
     >
-      {children}
+      <VStack
+        alignment="leading"
+        spacing={spacingValue}
+        frame={{ maxWidth: "infinity" }}
+        sensoryFeedback={sensoryFeedback}
+        animation={animationValue === undefined ? undefined : { animation: motion.page, value: animationValue }}
+        transition={transition}
+      >
+        {children}
+      </VStack>
     </VStack>
   )
 }

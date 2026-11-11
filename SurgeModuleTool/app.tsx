@@ -1,14 +1,12 @@
 import { useCallback, useState, ZStack } from "scripting"
 import { LibraryProvider } from "./contexts/LibraryContext"
 import { loadSettings } from "./services/settingsStore"
-import { motion } from "./design/AllPatternDesign"
 import { ToastHost } from "./components/ToastHost"
 import type { Navigate, Route } from "./types"
 import { HomePage } from "./pages/HomePage"
 import { AddModulePage } from "./pages/AddModulePage"
 import { ModuleDetailPage } from "./pages/ModuleDetailPage"
 import { SettingsPage } from "./pages/SettingsPage"
-import { ToolsPage } from "./pages/ToolsPage"
 
 /** 应用根组件：用内部路由切换页面，保证 Context 始终可用 */
 export function App({
@@ -23,8 +21,9 @@ export function App({
     initialUrl ? { name: "add", url: initialUrl, moduleName: initialName } : { name: "home" }
   )
 
+  // 不使用整页 withAnimation：避免子页面返回时 ZStack 短暂重叠出系统材质残影
   const go = useCallback<Navigate>(next => {
-    void withAnimation(motion.page, () => setRoute(next))
+    setRoute(next)
   }, [])
 
   function renderRoute() {
@@ -41,8 +40,6 @@ export function App({
         return <ModuleDetailPage go={go} path={route.path} />
       case "settings":
         return <SettingsPage go={go} />
-      case "tools":
-        return <ToolsPage go={go} />
       default:
         return <HomePage go={go} />
     }

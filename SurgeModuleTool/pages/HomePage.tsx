@@ -20,32 +20,21 @@ import { ModuleRow } from "../components/ModuleRow"
 import { SectionTitle } from "../components/SectionTitle"
 import { StatTile } from "../components/StatTile"
 import { useLibrary } from "../contexts/LibraryContext"
-import { cardTransition, motion, pageGradient, pageTransition, palette, spacing } from "../design/AllPatternDesign"
+import { cardTransition, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
 import type { Navigate } from "../types"
 
 /** 工具列表里的一行 */
-function ToolRow({
-  icon,
-  title,
-  subtitle,
-  onTap,
-}: {
-  icon: string
-  title: string
-  subtitle: string
-  onTap: () => void
-}): ReturnType<typeof Button> {
+function ToolRow({ icon, title, subtitle, onTap }: { icon: string; title: string; subtitle: string; onTap: () => void }) {
   return (
     <Button buttonStyle="plain" action={onTap}>
-      <HStack spacing={spacing.md} padding={{ vertical: 11 }} frame={{ maxWidth: "infinity" }}>
+      <HStack alignment="top" spacing={spacing.md} padding={{ vertical: 11 }} frame={{ maxWidth: "infinity" }}>
         <Image systemName={icon} font="body" foregroundStyle={palette.accent} frame={{ width: 24 }} />
-        <VStack alignment="leading" spacing={2}>
-          <Text font="subheadline">{title}</Text>
-          <Text font="caption2" foregroundStyle={palette.tertiaryLabel} lineLimit={1}>
+        <VStack alignment="leading" spacing={2} frame={{ maxWidth: "infinity" }}>
+          <Text font="subheadline" multilineTextAlignment="leading">{title}</Text>
+          <Text font="caption2" foregroundStyle={palette.tertiaryLabel} lineLimit={1} multilineTextAlignment="leading">
             {subtitle}
           </Text>
         </VStack>
-        <Spacer />
         <Image systemName="chevron.right" font="caption" foregroundStyle={palette.tertiaryLabel} />
       </HStack>
     </Button>
@@ -62,19 +51,18 @@ export function HomePage({ go }: { go: Navigate }) {
     () => (settings.showModulesWithoutUrl ? modules : modules.filter(item => item.hasSubscription)),
     [modules, settings.showModulesWithoutUrl]
   )
-
-  const stats = useMemo(() => {
-    const withUrl = modules.filter(item => item.hasSubscription).length
-    const failed = modules.filter(item => item.status === "failed").length
-    return { total: modules.length, withUrl, failed }
-  }, [modules])
+  const stats = useMemo(() => ({
+    total: modules.length,
+    withUrl: modules.filter(item => item.hasSubscription).length,
+    failed: modules.filter(item => item.status === "failed").length,
+  }), [modules])
 
   function bump(): void {
     setHaptic(current => current + 1)
   }
 
   return (
-    <NavigationStack transition={pageTransition}>
+    <NavigationStack>
       <ZStack>
         <Rectangle fill={pageGradient} ignoresSafeArea />
         <ScrollView
@@ -83,29 +71,21 @@ export function HomePage({ go }: { go: Navigate }) {
           toolbarBackgroundVisibility="hidden"
           toolbar={{
             topBarLeading: <Button title="关闭" action={dismiss} />,
-            topBarTrailing: (
-              <Button action={() => void refresh()} buttonStyle="plain" disabled={busy}>
-                <Image systemName="arrow.clockwise" />
-              </Button>
-            ),
+            topBarTrailing: <Button action={() => void refresh()} buttonStyle="plain" disabled={busy}><Image systemName="arrow.clockwise" /></Button>,
           }}
           frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
         >
           <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={{ maxWidth: "infinity" }}>
             <GlassCard sensoryFeedback={{ trigger: haptic, feedback: "impactSoft" }}>
-              <HStack alignment="center" spacing={spacing.sm}>
+              <HStack alignment="top" spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                 <StatTile label="模块" value={stats.total} tint={palette.secondaryLabel} />
                 <Divider frame={{ height: 28 }} />
                 <StatTile label="可更新" value={stats.withUrl} tint={palette.accent} />
                 <Divider frame={{ height: 28 }} />
-                <StatTile
-                  label="失败"
-                  value={stats.failed}
-                  tint={stats.failed > 0 ? palette.danger : palette.secondaryLabel}
-                />
+                <StatTile label="失败" value={stats.failed} tint={stats.failed > 0 ? palette.danger : palette.secondaryLabel} />
               </HStack>
 
-              <HStack spacing={spacing.sm}>
+              <HStack alignment="top" spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                 <Button
                   buttonStyle="glassProminent"
                   disabled={busy || loading}
@@ -126,23 +106,13 @@ export function HomePage({ go }: { go: Navigate }) {
                 <Spacer />
               </HStack>
 
-              <Button
-                buttonStyle="plain"
-                action={() => {
-                  if (!folderPath) {
-                    return
-                  }
-                  void Pasteboard.setString(folderPath).then(() => showNotice("已复制模块目录"))
-                }}
-              >
+              <Button buttonStyle="plain" action={() => {
+                if (!folderPath) return
+                void Pasteboard.setString(folderPath).then(() => showNotice("已复制模块目录"))
+              }}>
                 <HStack spacing={6} padding={{ vertical: 2 }} frame={{ maxWidth: "infinity" }}>
                   <Image systemName="folder" font="caption" foregroundStyle={palette.tertiaryLabel} />
-                  <Text
-                    font="caption2"
-                    foregroundStyle={palette.tertiaryLabel}
-                    lineLimit={1}
-                    truncationMode="middle"
-                  >
+                  <Text font="caption2" foregroundStyle={palette.tertiaryLabel} lineLimit={1} truncationMode="middle">
                     {folderPath || "正在准备模块目录…"}
                   </Text>
                   <Spacer />
@@ -155,94 +125,46 @@ export function HomePage({ go }: { go: Navigate }) {
 
             {loading ? (
               <GlassCard>
-                <HStack spacing={spacing.sm}>
+                <HStack alignment="top" spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                   <Image systemName="hourglass" foregroundStyle={palette.secondaryLabel} />
-                  <Text font="subheadline" foregroundStyle={palette.secondaryLabel} contentTransition="opacity">
-                    正在扫描模块目录…
-                  </Text>
+                  <Text font="subheadline" foregroundStyle={palette.secondaryLabel} contentTransition="opacity">正在扫描模块目录…</Text>
                 </HStack>
               </GlassCard>
             ) : visibleModules.length === 0 ? (
               <GlassCard>
                 <VStack alignment="leading" spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
                   <Image systemName="tray" font="title" foregroundStyle={palette.tertiaryLabel} />
-                  <Text font="headline">目录里还没有模块</Text>
+                  <Text font="headline" multilineTextAlignment="leading">目录里还没有模块</Text>
                   <Text font="caption" foregroundStyle={palette.secondaryLabel} multilineTextAlignment="leading">
                     把 .sgmodule 文件放进模块目录，或从链接安装一个本地模块。
                   </Text>
-                  <Button
-                    title="从链接安装"
-                    systemImage="link.badge.plus"
-                    buttonStyle="glassProminent"
-                    action={() => {
-                      bump()
-                      go({ name: "add" })
-                    }}
-                  />
+                  <Button title="从链接安装" systemImage="link.badge.plus" buttonStyle="glassProminent" action={() => { bump(); go({ name: "add" }) }} />
                 </VStack>
               </GlassCard>
             ) : (
-              <GlassCard padding={0} spacingValue={0}>
+              <GlassCard padding={{ horizontal: spacing.lg, vertical: spacing.md }} spacingValue={0}>
                 <LazyVStack spacing={0} animation={{ animation: motion.page, value: visibleModules.length }}>
                   {visibleModules.map((entry, index) => (
-                    <VStack key={entry.path} alignment="leading" spacing={0} transition={cardTransition}>
+                    <VStack key={entry.path} alignment="leading" spacing={0} transition={cardTransition} frame={{ maxWidth: "infinity" }}>
                       <Button buttonStyle="plain" action={() => go({ name: "detail", path: entry.path })}>
-                        <VStack alignment="leading" padding={{ horizontal: spacing.lg, vertical: spacing.md }}>
+                        <VStack alignment="leading" padding={{ vertical: spacing.md }} frame={{ maxWidth: "infinity" }}>
                           <ModuleRow entry={entry} />
                         </VStack>
                       </Button>
-                      {index < visibleModules.length - 1 ? (
-                        <VStack padding={{ horizontal: spacing.lg }}>
-                          <Rectangle fill={palette.hairline} frame={{ height: 0.5 }} />
-                        </VStack>
-                      ) : null}
+                      {index < visibleModules.length - 1 ? <Rectangle fill={palette.hairline} frame={{ height: 0.5, maxWidth: "infinity" }} /> : null}
                     </VStack>
                   ))}
                 </LazyVStack>
               </GlassCard>
             )}
 
-            <SectionTitle title="工具" caption="安装 · 跳转 · 设置" />
-            <GlassCard padding={{ horizontal: spacing.lg, vertical: 2 }} spacingValue={0}>
-              <ToolRow
-                icon="link.badge.plus"
-                title="从链接安装"
-                subtitle="下载远端模块并记录 #SUBSCRIBED"
-                onTap={() => {
-                  bump()
-                  go({ name: "add" })
-                }}
-              />
+            <SectionTitle title="工具" caption="安装 · 设置" />
+            <GlassCard padding={{ horizontal: spacing.lg, vertical: spacing.md }} spacingValue={0}>
+              <ToolRow icon="link.badge.plus" title="从链接安装" subtitle="下载远端模块并记录 #SUBSCRIBED" onTap={() => { bump(); go({ name: "add" }) }} />
               <Divider />
-              <ToolRow
-                icon="wand.and.stars"
-                title="Scheme 反劫持"
-                subtitle="scriptable:// → scripting://（Surge + 内置浏览器脚本）"
-                onTap={() => {
-                  bump()
-                  go({ name: "tools" })
-                }}
-              />
+              <ToolRow icon="gearshape" title="设置与目录" subtitle="模块文件夹、User-Agent 与更新行为" onTap={() => { bump(); go({ name: "settings" }) }} />
               <Divider />
-              <ToolRow
-                icon="gearshape"
-                title="设置与目录"
-                subtitle="模块文件夹、User-Agent 与更新行为"
-                onTap={() => {
-                  bump()
-                  go({ name: "settings" })
-                }}
-              />
-              <Divider />
-              <ToolRow
-                icon="bolt.fill"
-                title="重载 Surge"
-                subtitle="让 Surge 重新加载本地模块"
-                onTap={() => {
-                  bump()
-                  void reload()
-                }}
-              />
+              <ToolRow icon="bolt.fill" title="重载 Surge" subtitle="让 Surge 重新加载本地模块" onTap={() => { bump(); void reload() }} />
             </GlassCard>
 
             <Text font="caption2" foregroundStyle={palette.tertiaryLabel} multilineTextAlignment="leading">
