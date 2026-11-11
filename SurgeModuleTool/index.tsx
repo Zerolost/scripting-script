@@ -12,9 +12,10 @@ async function run(): Promise<void> {
   const rawName = typeof params.name === "string" ? params.name.trim() : ""
 
   try {
-    await Navigation.present(
-      <App initialUrl={rawUrl || undefined} initialName={rawName || undefined} />
-    )
+    await Navigation.present({
+      element: <App initialUrl={rawUrl || undefined} initialName={rawName || undefined} />,
+      modalPresentationStyle: "fullScreen",
+    })
   } catch (error) {
     console.error("SurgeModuleTool 运行失败", error)
     await Dialog.alert({
