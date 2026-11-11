@@ -21,6 +21,14 @@ export const radius = { sm: 10, md: 16, lg: 22, xl: 28 }
 export const cardShape: Shape = { type: "rect", cornerRadius: radius.lg }
 export const chipShape: Shape = "capsule"
 
+/** 文本承载框：圆角矩形，比卡片小一档 */
+export const textBoxShape: Shape = { type: "rect", cornerRadius: radius.md }
+
+export const textBoxInsets: NonNullable<CommonViewProps["padding"]> = {
+  horizontal: spacing.md,
+  vertical: spacing.sm,
+}
+
 /** 所有卡片都使用同一个内边距，避免“工具卡”宽度/高度看起来不同 */
 export const cardInsets: NonNullable<CommonViewProps["padding"]> = {
   horizontal: spacing.lg,
@@ -59,12 +67,16 @@ const cardGlass = UIGlass.regular().interactive(false)
 const tintedCardGlass = cardGlass.tint(palette.accent)
 const chipGlass = UIGlass.regular().interactive(true)
 const tintedChipGlass = chipGlass.tint(palette.accent)
+const textBoxGlass = UIGlass.regular().interactive(false)
+const tintedTextBoxGlass = textBoxGlass.tint(palette.accent)
 
 /** 返回值也缓存，避免每次渲染生成 {glass, shape} */
 export const glassCardNormal = { glass: cardGlass, shape: cardShape }
 export const glassCardTinted = { glass: tintedCardGlass, shape: cardShape }
 export const glassChipNormal = { glass: chipGlass, shape: chipShape }
 export const glassChipTinted = { glass: tintedChipGlass, shape: chipShape }
+export const glassTextBoxNormal = { glass: textBoxGlass, shape: textBoxShape }
+export const glassTextBoxTinted = { glass: tintedTextBoxGlass, shape: textBoxShape }
 
 export function glassCard(tinted = false): { glass: UIGlass; shape: Shape } {
   return tinted ? glassCardTinted : glassCardNormal
@@ -72,6 +84,11 @@ export function glassCard(tinted = false): { glass: UIGlass; shape: Shape } {
 
 export function glassChip(tinted = false): { glass: UIGlass; shape: Shape } {
   return tinted ? glassChipTinted : glassChipNormal
+}
+
+/** 文本承载框的玻璃背景 */
+export function glassTextBox(tinted = false): { glass: UIGlass; shape: Shape } {
+  return tinted ? glassTextBoxTinted : glassTextBoxNormal
 }
 
 export function cardBackground(tinted = false): { style: ShapeStyle; shape: Shape } {

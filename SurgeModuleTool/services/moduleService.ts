@@ -67,6 +67,49 @@ function joinPath(folder: string, item: string): string {
   return item.startsWith("/") ? item : `${folder}/${item}`
 }
 
+/**
+ * stat.type 在运行时返回的是 NSFileTypeRegular / NSFileTypeDirectory，
+ * 而不是文档里写的 file / directory；两种形式都要兼容。
+ */
+function isRegularFile(type: string): boolean {
+  return type === "file" || type === "NSFileTypeRegular" || type.endsWith("Regular")
+}
+
+/** 直接从磁盘读一个模块，用于详情页在列表尚未刷新时也能正常展示 */
+export function readLocalModuleEntry(path: string): ModuleEntry | null {
+  try {
+    if (!FileManager.existsSync(path)) {
+      return null
+    }
+    const stat = FileManager.statSync(path)
+    if (!isRegularFile(stat.type)) {
+      return null
+    }
+    let content = ""
+    try {
+      content = FileManager.readAsStringSync(path)
+    } catch (error) {
+      console.log("读取本地模块失败", error)
+    }
+    const header = parseModuleHeader(content)
+    const fileName = fileNameOf(path)
+    return {
+      path,
+      fileName,
+      name: header.name || fileName.replace(/\.[^.]+$/, ""),
+      desc: header.desc,
+      subscribedUrl: header.subscribedUrl,
+      size: stat.size,
+      modifiedAt: toMillis(timestampOf(stat.modificationDate)),
+      hasSubscription: Boolean(header.subscribedUrl),
+      status: "idle",
+    }
+  } catch (error) {
+    console.log("读取本地模块失败", error)
+    return null
+  }
+}
+
 /** 扫描目录，生成模块列表 */
 export async function scanModules(folderPath: string): Promise<ModuleEntry[]> {
   if (!FileManager.existsSync(folderPath)) {
@@ -96,7 +139,7 @@ export async function scanModules(folderPath: string): Promise<ModuleEntry[]> {
       } catch {
         continue
       }
-      if (stat.type !== "file") {
+      if (!isRegularFile(stat.type)) {
         continue
       }
       let content = ""

@@ -1,5 +1,6 @@
 import { Button, Divider, HStack, Image, LazyVStack, Navigation, Rectangle, ScrollView, Spacer, Text, VStack, ZStack, useMemo } from "scripting"
 import { GlassCard } from "../components/GlassCard"
+import { GlassText } from "../components/GlassText"
 import { ModuleRow } from "../components/ModuleRow"
 import { SectionTitle } from "../components/SectionTitle"
 import { StatTile } from "../components/StatTile"
@@ -85,14 +86,16 @@ export function HomePage({ go }: { go: Navigate }) {
                 void Pasteboard.setString(folderPath).then(() => showNotice("已复制模块目录"))
               }}
             >
-              <HStack spacing={6} padding={{ vertical: 2 }} frame={leadingFillFrame}>
-                <Image systemName="folder" font="caption" foregroundStyle={palette.tertiaryLabel} />
-                <Text font="caption2" foregroundStyle={palette.tertiaryLabel} lineLimit={1} truncationMode="middle">
-                  {folderPath || "正在准备模块目录…"}
-                </Text>
-                <Spacer />
-                <Image systemName="doc.on.doc" font="caption2" foregroundStyle={palette.tertiaryLabel} />
-              </HStack>
+              <GlassText>
+                <HStack spacing={6} frame={leadingFillFrame}>
+                  <Image systemName="folder" font="caption" foregroundStyle={palette.tertiaryLabel} />
+                  <Text font="caption2" foregroundStyle={palette.tertiaryLabel} lineLimit={1} truncationMode="middle">
+                    {folderPath || "正在准备模块目录…"}
+                  </Text>
+                  <Spacer />
+                  <Image systemName="doc.on.doc" font="caption2" foregroundStyle={palette.tertiaryLabel} />
+                </HStack>
+              </GlassText>
             </Button>
           </GlassCard>
 
@@ -145,7 +148,7 @@ export function HomePage({ go }: { go: Navigate }) {
           </GlassCard>
 
           <Text font="caption2" foregroundStyle={palette.tertiaryLabel} multilineTextAlignment="leading">
-            v3.2.0 · 更新逻辑与 Script-Hub 的 SurgeModuleTool 一致
+            v3.3.0 · 更新逻辑与 Script-Hub 的 SurgeModuleTool 一致
           </Text>
         </VStack>
       </ScrollView>

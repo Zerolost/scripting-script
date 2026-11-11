@@ -1,9 +1,10 @@
 import { Button, HStack, Image, Rectangle, ScrollView, Text, TextField, Toggle, VStack, ZStack, useState } from "scripting"
 import { GlassCard } from "../components/GlassCard"
+import { GlassText } from "../components/GlassText"
 import { childToolbar } from "../components/TopToolbar"
 import { useLibrary } from "../contexts/LibraryContext"
 import { fullFillFrame, leadingFillFrame, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
-import { TOOL_VERSION, SURGE_MODULE_STORE_URL } from "../constants"
+import { EGERN_INSTALL_PREFIX, REMOTE_MODULE_URL, SURGE_INSTALL_PREFIX, TOOL_VERSION, SURGE_MODULE_STORE_URL } from "../constants"
 import { candidateFolders } from "../services/settingsStore"
 import type { Navigate } from "../types"
 
@@ -26,16 +27,18 @@ export function SettingsPage({ go }: { go: Navigate }) {
         <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={leadingFillFrame}>
           <GlassCard>
             <Text font="headline">模块目录</Text>
-            <Text
-              font="caption"
-              foregroundStyle={palette.secondaryLabel}
-              lineLimit={2}
-              truncationMode="middle"
-              contentTransition="opacity"
-              animation={{ animation: motion.quick, value: folderPath }}
-            >
-              {folderPath || "尚未选择目录"}
-            </Text>
+            <GlassText>
+              <Text
+                font="caption"
+                foregroundStyle={palette.secondaryLabel}
+                lineLimit={2}
+                truncationMode="middle"
+                contentTransition="opacity"
+                animation={{ animation: motion.quick, value: folderPath }}
+              >
+                {folderPath || "尚未选择目录"}
+              </Text>
+            </GlassText>
             <HStack spacing={spacing.sm} frame={leadingFillFrame}>
               <Button title="选择目录" systemImage="folder.badge.plus" buttonStyle="glassProminent" action={() => void chooseFolder()} />
               <Button
@@ -56,13 +59,15 @@ export function SettingsPage({ go }: { go: Navigate }) {
             <Text font="headline">推荐位置</Text>
             {folders.map(item => (
               <Button key={item.path} buttonStyle="plain" action={() => void copyPath(item.path)}>
-                <HStack spacing={spacing.sm} padding={{ vertical: 6 }} frame={leadingFillFrame}>
-                  <Image systemName="folder" foregroundStyle={palette.accent} />
-                  <VStack alignment="leading" spacing={2} frame={leadingFillFrame}>
-                    <Text font="subheadline">{item.title}</Text>
-                    <Text font="caption2" foregroundStyle={palette.tertiaryLabel} lineLimit={2}>{item.path}</Text>
-                  </VStack>
-                </HStack>
+                <GlassText>
+                  <HStack spacing={spacing.sm} frame={leadingFillFrame}>
+                    <Image systemName="folder" foregroundStyle={palette.accent} />
+                    <VStack alignment="leading" spacing={2} frame={leadingFillFrame}>
+                      <Text font="subheadline">{item.title}</Text>
+                      <Text font="caption2" foregroundStyle={palette.tertiaryLabel} lineLimit={2}>{item.path}</Text>
+                    </VStack>
+                  </HStack>
+                </GlassText>
               </Button>
             ))}
             <Text font="caption2" foregroundStyle={palette.tertiaryLabel}>
@@ -102,6 +107,30 @@ export function SettingsPage({ go }: { go: Navigate }) {
               toggleStyle="switch"
               sensoryFeedback={{ trigger: settings.showModulesWithoutUrl ? 1 : 0, feedback: "selection" }}
             />
+          </GlassCard>
+
+          <GlassCard>
+            <Text font="headline">反劫持模块</Text>
+            <GlassText>
+              <Text font="caption2" monospaced lineLimit={2} truncationMode="middle">{REMOTE_MODULE_URL}</Text>
+            </GlassText>
+            <HStack spacing={spacing.sm} frame={leadingFillFrame}>
+              <Button
+                title="导入 Surge"
+                systemImage="arrow.down.to.line"
+                buttonStyle="glassProminent"
+                action={() => void Safari.openURL(`${SURGE_INSTALL_PREFIX}${encodeURIComponent(REMOTE_MODULE_URL)}`)}
+              />
+              <Button
+                title="导入 Egern"
+                systemImage="arrow.down.to.line"
+                buttonStyle="glass"
+                action={() => void Safari.openURL(`${EGERN_INSTALL_PREFIX}${encodeURIComponent(REMOTE_MODULE_URL)}`)}
+              />
+            </HStack>
+            <Text font="caption2" foregroundStyle={palette.tertiaryLabel}>
+              Egern 与 Surge 使用同一份模块（Script Hub 的 Egern 导入也是这个 scheme），需先信任 MITM 证书。
+            </Text>
           </GlassCard>
 
           <GlassCard>

@@ -1,7 +1,7 @@
 import type { Settings } from "../types"
 
 /** 工具版本，与原 Scriptable 版保持一致的语义版本 */
-export const TOOL_VERSION = "3.2.0"
+export const TOOL_VERSION = "3.3.0"
 
 /** 原版工具使用的请求头 */
 export const DEFAULT_USER_AGENT = "script-hub/1.0.0"
@@ -31,3 +31,13 @@ export const SURGE_OPEN_URL = "surge:///start"
 
 /** Surge 官方仓库地址 */
 export const SURGE_MODULE_STORE_URL = "https://github.com/Script-Hub-Org/Script-Hub"
+
+/** 已发布的反劫持模块直链 */
+export const REMOTE_MODULE_URL =
+  "https://raw.githubusercontent.com/Zerolost/scripting-script/main/SurgeModuleTool/Scriptable2Scripting.sgmodule"
+
+/** Surge 安装远程模块 */
+export const SURGE_INSTALL_PREFIX = "surge:///install-module?url="
+
+/** Egern 安装远程模块（与 Script Hub 使用的 scheme 一致） */
+export const EGERN_INSTALL_PREFIX = "egern:///modules/new?url="

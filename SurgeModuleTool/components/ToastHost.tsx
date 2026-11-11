@@ -1,6 +1,6 @@
 import { Spacer, Text, VStack, useEffect } from "scripting"
 import { useToast } from "../contexts/LibraryContext"
-import { fullFillFrame, glassChip, motion, palette, spacing } from "../design/AllPatternDesign"
+import { fullFillFrame, glassTextBox, motion, palette, spacing, textBoxInsets } from "../design/AllPatternDesign"
 
 /** 底部浮层提示 */
 export function ToastHost(): ReturnType<typeof VStack> {
@@ -28,8 +28,8 @@ export function ToastHost(): ReturnType<typeof VStack> {
         <Text
           font="subheadline"
           foregroundStyle={palette.secondaryLabel}
-          padding={{ horizontal: spacing.lg, vertical: spacing.md }}
-          glassEffect={glassChip(true)}
+          padding={textBoxInsets}
+          glassEffect={glassTextBox(true)}
           multilineTextAlignment="leading"
           contentTransition="opacity"
           animation={{ animation: motion.quick, value: notice }}

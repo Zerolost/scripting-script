@@ -12,14 +12,25 @@ https://github.com/Zerolost/scripting-script/tree/main/SurgeModuleTool
 
 - **更新全部**：扫描模块目录，逐个读取 `#SUBSCRIBED` 并回写
 - **更新单个**：详情页更新、分享到 Surge、复制订阅链接、删除
-- **从链接安装**：下载远端模块并保存为本地 `.sgmodule`
+- **从链接安装**：下载远端模块并保存为本地 `.sgmodule`；同名不同源自动另存 `-1`
 - **URL Scheme**：`scripting://run/SurgeModuleTool?url=&name=`
 
 > `script.json` 的 `name` 与脚本目录名必须一致（本仓库两者都是 `SurgeModuleTool`）。不一致时 `scripting://run/...` 可能只打开 App 而不运行脚本。
+
 - **目录书签**：选一次目录，重启仍可读写
 - **重载 Surge**：请求 `http://script.hub/reload`
+- **一键导入**：设置页可把反劫持模块直接交给 Surge 或 Egern
 
-更新算法与 Script-Hub 的 `SurgeModuleTool.js` 一致。
+更新算法与 Script-Hub 的 `SurgeModuleTool.js` 一致。已用真实网络自测：安装 → 扫描 → 更新 → 同名另存，全部通过。
+
+## Egern
+
+Egern 与 Surge 共用同一份 `.sgmodule`（Script Hub 的「导入 Egern」也是拿 Surge 模块的 URL）。设置页提供：
+
+- **导入 Surge**：`surge:///install-module?url=...`
+- **导入 Egern**：`egern:///modules/new?url=...`
+
+两者都指向仓库里的 `Scriptable2Scripting.sgmodule`，装好后在对应 App 里开启模块并信任 MITM 证书。
 
 ## 内置浏览器脚本
 
@@ -139,11 +150,17 @@ design/AllPatternDesign  Liquid Glass、动效与 frame 令牌
 ## 设计
 
 - iOS 26 Liquid Glass；玻璃实例与 `{glass, shape}` 均模块级缓存
+- 卡片用 `GlassCard`（圆角 22）；路径、错误、代码、来源等**文本承载框**统一用 `GlassText`（圆角 12 的玻璃矩形）
 - 页面切换使用系统 `NavigationStack` push/pop，返回/关闭天然带转场
 - ToolBar：根页左侧 `xmark`，子页左侧系统返回，右侧统一刷新
 - 所有卡片同一内边距、同一 `leadingFillFrame`，左对齐不居中
 - 动画：数字 `numericText`、文本 `opacity`、图标 `symbolEffect`、列表状态
 - 震动：只用 SwiftUI `sensoryFeedback`，不放在高频点击上
+
+## 修复记录
+
+- `stat.type` 运行时返回 `NSFileTypeRegular`（不是文档里的 `file`），旧代码把所有文件都跳过，导致「下载成功但详情页提示模块不存在」。已兼容两种写法，并给详情页加了读盘回退。
+- Surge `[Body Rewrite]` 的 token 用空格分隔，正则与替换文本都不能含空格。
 
 ## 校验
 

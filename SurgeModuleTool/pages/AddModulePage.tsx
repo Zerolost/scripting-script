@@ -1,5 +1,6 @@
 import { Button, HStack, Image, Rectangle, ScrollView, Spacer, Text, TextField, VStack, ZStack, useEffect, useState } from "scripting"
 import { GlassCard } from "../components/GlassCard"
+import { GlassText } from "../components/GlassText"
 import { childToolbar } from "../components/TopToolbar"
 import { useLibrary } from "../contexts/LibraryContext"
 import { fullFillFrame, leadingFillFrame, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
@@ -111,9 +112,9 @@ export function AddModulePage({
             </Text>
 
             {error ? (
-              <VStack alignment="leading" spacing={spacing.xs} padding={spacing.md} background={palette.dangerSoft} animation={{ animation: motion.quick, value: error }}>
+              <GlassText>
                 <Text font="caption" foregroundStyle={palette.danger} contentTransition="opacity">{error}</Text>
-              </VStack>
+              </GlassText>
             ) : null}
           </GlassCard>
 
@@ -154,9 +155,11 @@ export function AddModulePage({
             <Text font="caption" foregroundStyle={palette.secondaryLabel}>
               原版使用 scriptable:///run/SurgeModuleTool?url=&name=。在 Scripting 中改用下面的链接即可：
             </Text>
-            <Text font="caption" monospaced lineLimit={3} textSelection>
-              scripting://run/SurgeModuleTool?url=&name=
-            </Text>
+            <GlassText>
+              <Text font="caption" monospaced lineLimit={3} textSelection>
+                scripting://run/SurgeModuleTool?url=&name=
+              </Text>
+            </GlassText>
             <Button
               title="复制调用链接"
               systemImage="doc.on.doc"

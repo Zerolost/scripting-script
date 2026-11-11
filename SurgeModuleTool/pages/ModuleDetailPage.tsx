@@ -1,17 +1,30 @@
-import { Button, HStack, Image, Rectangle, ScrollView, Spacer, Text, VStack, ZStack, useMemo } from "scripting"
+import { Button, HStack, Image, Rectangle, ScrollView, Spacer, Text, VStack, ZStack, useEffect, useMemo, useState } from "scripting"
 import { GlassCard } from "../components/GlassCard"
+import { GlassText } from "../components/GlassText"
 import { StatusBadge } from "../components/StatusBadge"
 import { childToolbar } from "../components/TopToolbar"
 import { useLibrary } from "../contexts/LibraryContext"
 import { fullFillFrame, leadingFillFrame, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
-import { shareFile } from "../services/moduleService"
+import { readLocalModuleEntry, shareFile } from "../services/moduleService"
 import type { Navigate } from "../types"
 import { formatBytes, hostOf, relativeTime } from "../utils/moduleContent"
 
 /** 模块详情 */
 export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
   const { modules, busy, refresh, updateOne, remove, showNotice } = useLibrary()
-  const entry = useMemo(() => modules.find(item => item.path === path), [modules, path])
+  // 列表可能还没刷新到刚下载的文件，这里回退到直接读盘，避免误报“模块不存在”
+  const entry = useMemo(
+    () => modules.find(item => item.path === path) ?? readLocalModuleEntry(path),
+    [modules, path]
+  )
+  const [retried, setRetried] = useState(false)
+
+  useEffect(() => {
+    if (!entry && !retried) {
+      setRetried(true)
+      void refresh()
+    }
+  }, [entry, retried, refresh])
 
   if (!entry) {
     return (
@@ -27,7 +40,7 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
           <VStack alignment="leading" spacing={spacing.md} padding={spacing.xl} frame={leadingFillFrame}>
             <Image systemName="questionmark.folder" font="title" foregroundStyle={palette.secondaryLabel} />
             <Text font="headline">模块不存在</Text>
-            <Text font="caption" foregroundStyle={palette.secondaryLabel}>它可能已被删除，返回首页刷新列表即可。</Text>
+            <Text font="caption" foregroundStyle={palette.secondaryLabel}>文件可能已被删除，返回首页刷新列表。</Text>
           </VStack>
         </ScrollView>
       </ZStack>
@@ -104,8 +117,10 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
 
           <GlassCard>
             <Text font="headline">订阅信息</Text>
-            <Text font="caption" foregroundStyle={palette.secondaryLabel}>来源</Text>
-            <Text font="caption" monospaced lineLimit={4}>{entry.subscribedUrl ?? "无 #SUBSCRIBED"}</Text>
+            <GlassText>
+              <Text font="caption" foregroundStyle={palette.secondaryLabel}>来源</Text>
+              <Text font="caption" monospaced lineLimit={4}>{entry.subscribedUrl ?? "无 #SUBSCRIBED"}</Text>
+            </GlassText>
             {entry.subscribedUrl ? (
               <Button
                 title="复制链接"
@@ -116,9 +131,11 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
                 }}
               />
             ) : null}
-            <Text font="caption" foregroundStyle={palette.secondaryLabel}>文件</Text>
-            <Text font="caption" monospaced lineLimit={2}>{entry.fileName} · {formatBytes(entry.size)}</Text>
-            <Text font="caption2" foregroundStyle={palette.tertiaryLabel} lineLimit={2}>{hostOf(entry.subscribedUrl) || entry.path}</Text>
+            <GlassText>
+              <Text font="caption" foregroundStyle={palette.secondaryLabel}>文件</Text>
+              <Text font="caption" monospaced lineLimit={2}>{entry.fileName} · {formatBytes(entry.size)}</Text>
+              <Text font="caption2" foregroundStyle={palette.tertiaryLabel} lineLimit={2}>{hostOf(entry.subscribedUrl) || entry.path}</Text>
+            </GlassText>
           </GlassCard>
 
           <GlassCard>
