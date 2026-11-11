@@ -32,16 +32,25 @@ https://github.com/Zerolost/scripting-script/tree/main/SurgeModuleTool
 
 ## Surge 模块
 
-`Scriptable2Scripting.sgmodule` 用参数表控制 MITM 范围，默认只包含测试页 CDN：
+真正的 Script Hub 在 **`script.hub`**（不是 `script-hub.netlify.app`）。它的源码里就是这一段：
+
+```html
+<a :href="'scriptable:///run/SurgeModuleTool?url=' + encodeURIComponent(result) ...">导入 Surge(本地模块 需配合 Scriptable)</a>
+```
+
+模块只对这个域名做 MITM：
 
 ```ini
-#!arguments=hosts:raw.githack.com
+#!arguments=hosts:script.hub
 
 [MITM]
 hostname = %APPEND% {{{hosts}}}
+skip-server-cert-verify = %APPEND% script.hub
 ```
 
-安装后在 Surge 里编辑模块参数，填你实际放安装链接的域名（逗号分隔）。未填的域名不会被解密，也不会被改写。
+- `script.hub` 的上游证书是自签的，所以需要 `skip-server-cert-verify`
+- 只有 `hosts` 里列出的域名会被解密，不会抓其他流量
+- 首次使用必须在 Surge 里安装并信任 MITM 证书，否则 `https_decryption` 会一直是 `not_trusted`
 
 安装：
 
@@ -51,15 +60,16 @@ https://raw.githubusercontent.com/Zerolost/scripting-script/main/SurgeModuleTool
 
 ## 实测拦截
 
-GitHub 会过滤 `scriptable:` 协议，所以 GitHub 页面不适合验证。用仓库自带的测试页：
+1. Surge 开启代理，MITM 证书已信任，模块已启用
+2. Safari 打开 `https://script.hub`
+3. 选一个脚本，点「导入 Surge(本地模块 需配合 Scriptable)」
+4. 应该直接打开 Scripting，而不是 Scriptable
+
+也可以打开仓库自带的测试页验证浏览器脚本：
 
 ```text
 https://raw.githack.com/Zerolost/scripting-script/main/SurgeModuleTool/scheme-test.html
 ```
-
-- Safari + 浏览器脚本：打开上面地址，点击按钮应跳到 Scripting。
-- Surge：模块 `hosts` 保留 `raw.githack.com`，打开同一地址点击按钮。
-- 页面里的动态链接会在 3 秒后插入，用来验证 MutationObserver。
 
 ## 结构
 

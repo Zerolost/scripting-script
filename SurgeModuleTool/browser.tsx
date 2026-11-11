@@ -2,14 +2,14 @@
 // ==UserScript==
 // @name         Scriptable → Scripting 链接跳转
 // @namespace    surge-module-tool
-// @version      1.3.0
-// @description  把网页里的 scriptable:// 安装/调用链接改写为 scripting://
+// @version      1.4.0
+// @description  把 Script Hub 等页面里的 scriptable:// 安装链接改写为 scripting://
 // @match        *://*/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
 
-// 用户脚本只在本地改写 <a>，不发起任何网络请求；@match 放宽以保证任意站点都能生效。
+// 用户脚本只在本地改写 <a>，不发起网络请求。
 (function () {
   "use strict"
 
@@ -27,23 +27,31 @@
     return result
   }
 
+  function rewriteOne(el) {
+    if (!el || el.tagName !== "A") return
+    var raw = el.getAttribute("href")
+    if (!raw || raw.indexOf("scriptable:") === -1) return
+    el.setAttribute("href", convert(raw))
+  }
+
   function rewrite(root) {
     if (!root || !root.querySelectorAll) return
     var list = root.querySelectorAll('a[href*="scriptable:"], area[href*="scriptable:"]')
-    for (var i = 0; i < list.length; i++) {
-      var raw = list[i].getAttribute("href")
-      var next = convert(raw)
-      if (next !== raw) list[i].setAttribute("href", next)
-    }
+    for (var i = 0; i < list.length; i++) rewriteOne(list[i])
   }
 
-  // 点击前兜底改写一次
+  // 捕获阶段兜底：Script Hub 是 Vue 绑定 href，可能在渲染后才写入
   function onClick(event) {
     var node = event.target
     while (node && node !== document) {
-      if (node.tagName === "A" && node.href && String(node.href).indexOf("scriptable:") !== -1) {
-        node.setAttribute("href", convert(node.getAttribute("href")))
-        return
+      if (node.tagName === "A") {
+        var href = node.getAttribute("href")
+        if (href && href.indexOf("scriptable:") !== -1) {
+          event.preventDefault()
+          event.stopPropagation()
+          window.location.href = convert(href)
+          return
+        }
       }
       node = node.parentNode
     }
@@ -51,9 +59,18 @@
 
   var observer = new MutationObserver(function (records) {
     for (var i = 0; i < records.length; i++) {
-      var added = records[i].addedNodes
+      var record = records[i]
+      if (record.type === "attributes") {
+        rewriteOne(record.target)
+        continue
+      }
+      var added = record.addedNodes
       for (var j = 0; j < added.length; j++) {
-        if (added[j].nodeType === 1) rewrite(added[j])
+        var node = added[j]
+        if (node.nodeType === 1) {
+          rewriteOne(node)
+          rewrite(node)
+        }
       }
     }
   })
@@ -67,7 +84,14 @@
 
   function start() {
     rewrite(document)
-    if (document.documentElement) observer.observe(document.documentElement, { childList: true, subtree: true })
+    if (document.documentElement) {
+      observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["href"]
+      })
+    }
     document.addEventListener("click", onClick, true)
   }
 
