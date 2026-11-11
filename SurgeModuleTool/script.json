@@ -1,0 +1,29 @@
+{
+  "name": "SurgeModuleTool",
+  "entry": "index.tsx",
+  "icon": "square.2.layers.3d.fill",
+  "color": "rgba(10, 132, 255, 1)",
+  "version": "3.1.0",
+  "runInApp": false,
+  "author": {
+    "name": "SurgeModuleTool for Scripting",
+    "email": null,
+    "homepage": "https://github.com/Script-Hub-Org/Script-Hub"
+  },
+  "contributors": [],
+  "description": "Surge module updater for Scripting: scan/update #SUBSCRIBED modules, install from URL, and generate a Surge module + Safari userscript that redirects scriptable:// schemes to scripting://.",
+  "localizedNames": {
+    "zh": "Surge 模块工具"
+  },
+  "localizedDescriptions": {
+    "zh": "Surge 模块更新器：批量更新带 #SUBSCRIBED 的本地模块、从链接安装模块，并生成把 scriptable:// 跳转到 scripting:// 的 Surge 反劫持模块与 Safari 用户脚本。"
+  },
+  "iconImage": "",
+  "intentInputTypes": [
+    "texts",
+    "urls"
+  ],
+  "permissions": null,
+  "remoteDefinitionId": null,
+  "remoteResource": null
+}
