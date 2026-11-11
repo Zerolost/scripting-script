@@ -4,7 +4,6 @@ import {
   HStack,
   Image,
   LazyVStack,
-  Navigation,
   NavigationStack,
   Rectangle,
   ScrollView,
@@ -55,7 +54,6 @@ function ToolRow({
 /** 首页：概览、模块列表与工具入口 */
 export function HomePage({ go }: { go: Navigate }) {
   const { modules, loading, busy, folderPath, settings, refresh, updateAll, reload, showNotice } = useLibrary()
-  const dismiss = Navigation.useDismiss()
   const [haptic, setHaptic] = useState<number>(0)
 
   const visibleModules = useMemo(
@@ -81,7 +79,6 @@ export function HomePage({ go }: { go: Navigate }) {
           navigationTitle="Surge 模块工具"
           navigationBarTitleDisplayMode="inline"
           toolbarBackgroundVisibility="hidden"
-          toolbar={{ topBarLeading: <Button title="关闭" action={dismiss} /> }}
           frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
         >
           <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg}>

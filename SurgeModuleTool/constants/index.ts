@@ -35,3 +35,10 @@ export const SURGE_OPEN_URL = "surge:///start"
 
 /** Surge 官方仓库地址 */
 export const SURGE_MODULE_STORE_URL = "https://github.com/Script-Hub-Org/Script-Hub"
+
+/** 已发布到 GitHub 的反劫持模块直链 */
+export const REMOTE_MODULE_URL =
+  "https://raw.githubusercontent.com/Zerolost/scripting-script/main/SurgeModuleTool/Scriptable2Scripting.sgmodule"
+
+/** Surge 安装模块的 URL Scheme */
+export const SURGE_INSTALL_MODULE_PREFIX = "surge:///install-module?url="

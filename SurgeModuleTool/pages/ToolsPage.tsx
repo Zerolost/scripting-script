@@ -17,6 +17,7 @@ import { useLibrary } from "../contexts/LibraryContext"
 import { cardTransition, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
 import type { Navigate, SchemeArtifacts } from "../types"
 import { buildSurgeModule, convertSchemeUrl, isScriptingRunUrl, writeSchemeArtifacts } from "../services/schemeService"
+import { REMOTE_MODULE_URL, SURGE_INSTALL_MODULE_PREFIX } from "../constants"
 import { resolveModuleFolder } from "../services/settingsStore"
 import { shareFile } from "../services/moduleService"
 
@@ -147,6 +148,34 @@ export function ToolsPage({ go }: { go: Navigate }) {
                 </HStack>
               </GlassCard>
             ) : null}
+
+            <GlassCard>
+              <Text font="headline">从 GitHub 直接安装</Text>
+              <Text font="caption" foregroundStyle={palette.secondaryLabel}>
+                模块已发布到仓库，不用先下载文件，交给 Surge 的 URL 安装即可。
+              </Text>
+              <Text font="caption2" monospaced lineLimit={2} truncationMode="middle" textSelection>
+                {REMOTE_MODULE_URL}
+              </Text>
+              <HStack spacing={spacing.sm}>
+                <Button
+                  title="安装到 Surge"
+                  systemImage="arrow.down.to.line"
+                  buttonStyle="glassProminent"
+                  action={() => {
+                    void Safari.openURL(`${SURGE_INSTALL_MODULE_PREFIX}${encodeURIComponent(REMOTE_MODULE_URL)}`)
+                  }}
+                />
+                <Button
+                  title="复制链接"
+                  systemImage="doc.on.doc"
+                  buttonStyle="glass"
+                  action={() => {
+                    void Pasteboard.setString(REMOTE_MODULE_URL).then(() => showNotice("已复制模块链接"))
+                  }}
+                />
+              </HStack>
+            </GlassCard>
 
             <GlassCard>
               <Text font="headline">Surge 侧怎么装</Text>

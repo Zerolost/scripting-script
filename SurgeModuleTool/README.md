@@ -33,6 +33,16 @@ https://github.com/Zerolost/scripting-script/tree/main/SurgeModuleTool
 
 ## 反劫持
 
+### 直接安装
+
+Surge 模块已随仓库发布，可直接用 URL 安装：
+
+```text
+https://raw.githubusercontent.com/Zerolost/scripting-script/main/SurgeModuleTool/Scriptable2Scripting.sgmodule
+```
+
+工具页的「从 GitHub 直接安装」会调用 `surge:///install-module?url=...` 一键打开 Surge。
+
 ### Surge 模块
 
 工具页可生成 `Scriptable2Scripting.sgmodule`，关键是纯声明式规则：

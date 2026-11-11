@@ -1,32 +1,31 @@
 {
-  "name": "SurgeModuleTool",
-  "entry": "index.tsx",
-  "icon": "square.2.layers.3d.fill",
-  "color": "rgba(10, 132, 255, 1)",
-  "version": "3.1.0",
-  "runInApp": false,
-  "author": {
-    "name": "SurgeModuleTool for Scripting",
-    "email": null,
-    "homepage": "https://github.com/Script-Hub-Org/Script-Hub"
+  "description" : "Surge module updater for Scripting: batch-update #SUBSCRIBED modules, install from URL, and redirect scriptable:\/\/ links to scripting:\/\/ with a Surge module plus a built-in Safari browser script.",
+  "iconImage" : "",
+  "remoteResource" : null,
+  "localizedDescriptions" : {
+    "zh" : "Surge 模块更新器：批量更新带 #SUBSCRIBED 的本地模块、从链接安装，并通过 Surge 模块与内置浏览器脚本把 scriptable:\/\/ 跳转到 scripting:\/\/。"
   },
-  "contributors": [],
-  "description": "Surge module updater for Scripting: batch-update #SUBSCRIBED modules, install from URL, and redirect scriptable:// links to scripting:// with a Surge module plus a built-in Safari browser script.",
-  "localizedNames": {
-    "zh": "Surge 模块工具"
-  },
-  "localizedDescriptions": {
-    "zh": "Surge 模块更新器：批量更新带 #SUBSCRIBED 的本地模块、从链接安装，并通过 Surge 模块与内置浏览器脚本把 scriptable:// 跳转到 scripting://。"
-  },
-  "iconImage": "",
-  "intentInputTypes": [
+  "remoteDefinitionId" : null,
+  "version" : "3.1.0",
+  "name" : "1",
+  "intentInputTypes" : [
     "texts",
     "urls"
   ],
-  "permissions": null,
-  "remoteDefinitionId": null,
-  "remoteResource": {
-    "url": "https://github.com/Zerolost/scripting-script/tree/main/SurgeModuleTool",
-    "autoUpdateInterval": 86400
-  }
+  "permissions" : null,
+  "color" : "rgba(10, 132, 255, 1)",
+  "author" : {
+    "homepage" : "https:\/\/github.com\/Script-Hub-Org\/Script-Hub",
+    "email" : null,
+    "name" : "SurgeModuleTool for Scripting"
+  },
+  "localizedNames" : {
+    "zh" : "Surge 模块工具"
+  },
+  "contributors" : [
+
+  ],
+  "icon" : "square.2.layers.3d.fill",
+  "runInApp" : false,
+  "entry" : "index.tsx"
 }

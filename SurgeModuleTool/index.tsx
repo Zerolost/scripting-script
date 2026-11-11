@@ -14,7 +14,7 @@ async function run(): Promise<void> {
   try {
     await Navigation.present({
       element: <App initialUrl={rawUrl || undefined} initialName={rawName || undefined} />,
-      modalPresentationStyle: "fullScreen",
+      modalPresentationStyle: "pageSheet",
     })
   } catch (error) {
     console.error("SurgeModuleTool 运行失败", error)
