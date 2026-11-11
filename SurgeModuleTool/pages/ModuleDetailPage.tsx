@@ -14,12 +14,12 @@ import {
 import { GlassCard } from "../components/GlassCard"
 import { StatusBadge } from "../components/StatusBadge"
 import { useLibrary } from "../contexts/LibraryContext"
-import { motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
+import { fullFillFrame, leadingFillFrame, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
 import { shareFile } from "../services/moduleService"
 import type { Navigate } from "../types"
 import { formatBytes, hostOf, relativeTime } from "../utils/moduleContent"
 
-/** 模块详情：更新、分享、复制链接与删除 */
+/** 模块详情 */
 export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
   const { modules, busy, refresh, updateOne, remove, showNotice } = useLibrary()
   const entry = useMemo(() => modules.find(item => item.path === path), [modules, path])
@@ -41,9 +41,9 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
                 </Button>
               ),
             }}
-            frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
+            frame={fullFillFrame}
           >
-            <VStack alignment="leading" spacing={spacing.md} padding={spacing.xl} frame={{ maxWidth: "infinity" }}>
+            <VStack alignment="leading" spacing={spacing.md} padding={spacing.xl} frame={leadingFillFrame}>
               <Image systemName="questionmark.folder" font="title" foregroundStyle={palette.secondaryLabel} />
               <Text font="headline">模块不存在</Text>
               <Text font="caption" foregroundStyle={palette.secondaryLabel}>
@@ -73,9 +73,9 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
               </Button>
             ),
           }}
-          frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
+          frame={fullFillFrame}
         >
-          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={{ maxWidth: "infinity" }}>
+          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={leadingFillFrame}>
             <GlassCard sensoryFeedback={{ trigger: entry.modifiedAt, feedback: "success" }}>
               <HStack spacing={spacing.md} alignment="top">
                 <Image
@@ -101,7 +101,7 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
                 <Spacer />
               </HStack>
 
-              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+              <HStack spacing={spacing.sm} frame={leadingFillFrame}>
                 {entry.status === "updating" ? (
                   <StatusBadge text="更新中…" color={palette.accent} />
                 ) : entry.status === "failed" ? (
@@ -114,7 +114,7 @@ export function ModuleDetailPage({ go, path }: { go: Navigate; path: string }) {
                 <StatusBadge text={relativeTime(entry.modifiedAt)} color={palette.secondaryLabel} />
               </HStack>
 
-              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+              <HStack spacing={spacing.sm} frame={leadingFillFrame}>
                 <Button
                   buttonStyle="glassProminent"
                   disabled={busy || !entry.hasSubscription}

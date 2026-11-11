@@ -1,7 +1,7 @@
 import { Text, VStack, type Color } from "scripting"
-import { motion, palette } from "../design/AllPatternDesign"
+import { leadingFillFrame, motion, palette } from "../design/AllPatternDesign"
 
-/** 概览里的单个指标：数字变化时滚动 */
+/** 概览里的单个指标 */
 export function StatTile({
   label,
   value,
@@ -12,7 +12,7 @@ export function StatTile({
   tint?: Color
 }): ReturnType<typeof VStack> {
   return (
-    <VStack alignment="leading" spacing={2} frame={{ maxWidth: "infinity" }}>
+    <VStack alignment="leading" spacing={2} frame={leadingFillFrame}>
       <Text
         font="caption2"
         foregroundStyle={palette.secondaryLabel}

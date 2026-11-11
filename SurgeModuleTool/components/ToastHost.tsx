@@ -1,8 +1,8 @@
 import { Spacer, Text, VStack, useEffect } from "scripting"
 import { useToast } from "../contexts/LibraryContext"
-import { glassChip, motion, palette, spacing } from "../design/AllPatternDesign"
+import { fullFillFrame, glassChip, motion, palette, spacing } from "../design/AllPatternDesign"
 
-/** 底部浮层提示：出现/消失与文字变化都带动画 */
+/** 底部浮层提示 */
 export function ToastHost(): ReturnType<typeof VStack> {
   const { notice, showNotice } = useToast()
 
@@ -18,8 +18,8 @@ export function ToastHost(): ReturnType<typeof VStack> {
 
   return (
     <VStack
-      alignment="center"
-      frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
+      alignment="leading"
+      frame={fullFillFrame}
       padding={{ horizontal: spacing.lg, bottom: spacing.xxl }}
       allowsHitTesting={false}
     >
@@ -32,7 +32,6 @@ export function ToastHost(): ReturnType<typeof VStack> {
           glassEffect={glassChip(true)}
           multilineTextAlignment="leading"
           contentTransition="opacity"
-          transition={Transition.opacity().combined(Transition.move("bottom"))}
           animation={{ animation: motion.quick, value: notice }}
         >
           {notice}

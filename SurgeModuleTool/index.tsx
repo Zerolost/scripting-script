@@ -1,7 +1,7 @@
 import { Navigation, Script } from "scripting"
 import { App } from "./app"
 
-/**入口 */
+/** 入口 */
 async function run(): Promise<void> {
   const params: Record<string, any> = Script.queryParameters ?? {}
   const rawUrl = typeof params.url === "string" ? params.url.trim() : ""

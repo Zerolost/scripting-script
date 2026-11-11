@@ -8,7 +8,7 @@ import { AddModulePage } from "./pages/AddModulePage"
 import { ModuleDetailPage } from "./pages/ModuleDetailPage"
 import { SettingsPage } from "./pages/SettingsPage"
 
-/** 应用根组件：用内部路由切换页面，保证 Context 始终可用 */
+/** 应用根组件 */
 export function App({
   initialUrl,
   initialName,
@@ -21,7 +21,6 @@ export function App({
     initialUrl ? { name: "add", url: initialUrl, moduleName: initialName } : { name: "home" }
   )
 
-  // 不使用整页 withAnimation：避免子页面返回时 ZStack 短暂重叠出系统材质残影
   const go = useCallback<Navigate>(next => {
     setRoute(next)
   }, [])

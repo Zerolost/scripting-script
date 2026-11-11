@@ -1,4 +1,4 @@
-// 数据类型定义：模块条目、设置项与更新结果
+// 数据类型定义
 
 /** 模块文件解析出的头部信息 */
 export type ModuleHeader = {
@@ -72,7 +72,7 @@ export type FolderState = {
   source: "bookmark" | "default"
 }
 
-/** 应用内路由（单栈切换，避免模态页面丢失 Context） */
+/** 应用内路由 */
 export type Route =
   | { name: "home" }
   | { name: "add"; url?: string; moduleName?: string }

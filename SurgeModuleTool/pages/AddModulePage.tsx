@@ -15,11 +15,11 @@ import {
 } from "scripting"
 import { GlassCard } from "../components/GlassCard"
 import { useLibrary } from "../contexts/LibraryContext"
-import { cardTransition, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
+import { cardTransition, fullFillFrame, leadingFillFrame, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
 import type { ModuleEntry, Navigate } from "../types"
 import { formatBytes } from "../utils/moduleContent"
 
-/** 从链接创建本地模块（等价于原版的「从链接创建」） */
+/** 从链接创建本地模块 */
 export function AddModulePage({
   go,
   initialUrl,
@@ -78,11 +78,11 @@ export function AddModulePage({
               </Button>
             ),
           }}
-          frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
+          frame={fullFillFrame}
         >
-          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={{ maxWidth: "infinity" }}>
+          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={leadingFillFrame}>
             <GlassCard>
-              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+              <HStack spacing={spacing.sm} frame={leadingFillFrame}>
                 <Image systemName="link.badge.plus" font="title2" foregroundStyle={palette.accent} />
                 <Text font="title3" fontWeight="semibold">
                   从链接创建模块
@@ -118,10 +118,10 @@ export function AddModulePage({
                 />
               </VStack>
 
-              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+              <HStack spacing={spacing.sm} frame={leadingFillFrame}>
                 <Button
                   buttonStyle="glassProminent"
-                  frame={{ maxWidth: "infinity" }}
+                  frame={leadingFillFrame}
                   disabled={running || busy}
                   action={() => void submit()}
                 >
@@ -149,7 +149,7 @@ export function AddModulePage({
                   spacing={spacing.xs}
                   padding={spacing.md}
                   background={palette.dangerSoft}
-                  transition={Transition.opacity().combined(Transition.move("top"))}
+                  
                   animation={{ animation: motion.quick, value: error }}
                 >
                   <Text font="caption" foregroundStyle={palette.danger} contentTransition="opacity">
@@ -162,10 +162,10 @@ export function AddModulePage({
             {result ? (
               <GlassCard
                 tinted
-                transition={cardTransition}
+                
                 sensoryFeedback={{ trigger: result.path, feedback: "success" }}
               >
-                <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+                <HStack spacing={spacing.sm} frame={leadingFillFrame}>
                   <Image
                     systemName="checkmark.circle.fill"
                     font="title2"
@@ -182,7 +182,7 @@ export function AddModulePage({
                   </VStack>
                   <Spacer />
                 </HStack>
-                <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+                <HStack spacing={spacing.sm} frame={leadingFillFrame}>
                   <Button
                     title="查看详情"
                     buttonStyle="glass"

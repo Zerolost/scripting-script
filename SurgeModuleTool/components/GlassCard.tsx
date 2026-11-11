@@ -1,7 +1,6 @@
 import { VStack, type CommonViewProps, type VirtualNode } from "scripting"
-import { glassCard, motion, spacing } from "../design/AllPatternDesign"
+import { glassCard, leadingFillFrame, motion, spacing } from "../design/AllPatternDesign"
 
-/** 卡片允许的 children 形态，与 Scripting 内置组件的声明保持一致 */
 type CardChildren =
   | VirtualNode
   | (VirtualNode | boolean | undefined | null | (VirtualNode | undefined | null | boolean)[])[]
@@ -14,7 +13,6 @@ export function GlassCard({
   spacingValue = spacing.md,
   sensoryFeedback,
   animationValue,
-  transition,
 }: {
   children: CardChildren
   tinted?: boolean
@@ -22,23 +20,21 @@ export function GlassCard({
   spacingValue?: number
   sensoryFeedback?: CommonViewProps["sensoryFeedback"]
   animationValue?: number
-  transition?: CommonViewProps["transition"]
 }): VirtualNode {
   return (
     <VStack
       alignment="leading"
       spacing={0}
       padding={padding}
-      frame={{ maxWidth: "infinity" }}
+      frame={leadingFillFrame}
       glassEffect={glassCard(tinted)}
     >
       <VStack
         alignment="leading"
         spacing={spacingValue}
-        frame={{ maxWidth: "infinity" }}
+        frame={leadingFillFrame}
         sensoryFeedback={sensoryFeedback}
         animation={animationValue === undefined ? undefined : { animation: motion.page, value: animationValue }}
-        transition={transition}
       >
         {children}
       </VStack>

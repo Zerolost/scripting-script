@@ -1,7 +1,7 @@
 import { HStack, Spacer, Text, type VirtualNode } from "scripting"
-import { palette, spacing } from "../design/AllPatternDesign"
+import { leadingFillFrame, palette, spacing } from "../design/AllPatternDesign"
 
-/** 分组标题：左侧标题 + 右侧统计或操作 */
+/** 分组标题 */
 export function SectionTitle({
   title,
   caption,

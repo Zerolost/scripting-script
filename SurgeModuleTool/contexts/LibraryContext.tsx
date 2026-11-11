@@ -10,7 +10,7 @@ import {
 } from "../services/moduleService"
 import { pickModuleFolder, removeBookmark, resolveModuleFolder, saveSettings } from "../services/settingsStore"
 
-/** 全局状态：设置、模块列表与全部操作 */
+/** 全局状态 */
 export type LibraryContextValue = {
   settings: Settings
   folderPath: string
@@ -30,7 +30,6 @@ export type LibraryContextValue = {
 
 const LibraryContext = createContext<LibraryContextValue>()
 
-/** 提示条单独一个 Context：避免 Toast 变化重渲染整个页面 */
 type ToastContextValue = {
   notice: string | null
   showNotice: (text: string | null) => void

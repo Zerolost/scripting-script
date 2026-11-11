@@ -14,7 +14,7 @@ import {
 } from "scripting"
 import { GlassCard } from "../components/GlassCard"
 import { useLibrary } from "../contexts/LibraryContext"
-import { motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
+import { fullFillFrame, leadingFillFrame, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
 import { TOOL_VERSION, SURGE_MODULE_STORE_URL } from "../constants"
 import { candidateFolders } from "../services/settingsStore"
 import type { Navigate } from "../types"
@@ -41,9 +41,9 @@ export function SettingsPage({ go }: { go: Navigate }) {
               </Button>
             ),
           }}
-          frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
+          frame={fullFillFrame}
         >
-          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={{ maxWidth: "infinity" }}>
+          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={leadingFillFrame}>
             <GlassCard>
               <Text font="headline">模块目录</Text>
               <Text
@@ -56,7 +56,7 @@ export function SettingsPage({ go }: { go: Navigate }) {
               >
                 {folderPath || "尚未选择目录"}
               </Text>
-              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+              <HStack spacing={spacing.sm} frame={leadingFillFrame}>
                 <Button
                   title="选择目录"
                   systemImage="folder.badge.plus"
@@ -87,7 +87,7 @@ export function SettingsPage({ go }: { go: Navigate }) {
                     void copyPath(item.path)
                   }}
                 >
-                  <HStack spacing={spacing.sm} padding={{ vertical: 6 }} frame={{ maxWidth: "infinity" }}>
+                  <HStack spacing={spacing.sm} padding={{ vertical: 6 }} frame={leadingFillFrame}>
                     <Image systemName="folder" foregroundStyle={palette.accent} />
                     <VStack alignment="leading" spacing={2}>
                       <Text font="subheadline">{item.title}</Text>
@@ -145,7 +145,7 @@ export function SettingsPage({ go }: { go: Navigate }) {
 
             <GlassCard>
               <Text font="headline">关于</Text>
-              <HStack spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+              <HStack spacing={spacing.sm} frame={leadingFillFrame}>
                 <Image systemName="info.circle" foregroundStyle={palette.secondaryLabel} />
                 <Text font="caption" foregroundStyle={palette.secondaryLabel}>
                   SurgeModuleTool for Scripting v{TOOL_VERSION}

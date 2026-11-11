@@ -12,7 +12,6 @@ export const MODULE_FOLDER_NAME = "SurgeModules"
 /** 设置文件名 */
 export const SETTINGS_FILE_NAME = "surge-module-tool.json"
 
-/** 这些后缀不是模块文件，扫描时跳过 */
 export const IGNORED_EXTENSIONS = [".conf", ".txt", ".js", ".list"]
 
 /** 默认设置 */

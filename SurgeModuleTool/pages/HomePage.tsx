@@ -20,16 +20,16 @@ import { ModuleRow } from "../components/ModuleRow"
 import { SectionTitle } from "../components/SectionTitle"
 import { StatTile } from "../components/StatTile"
 import { useLibrary } from "../contexts/LibraryContext"
-import { cardTransition, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
+import { cardTransition, fullFillFrame, leadingFillFrame, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
 import type { Navigate } from "../types"
 
 /** 工具列表里的一行 */
 function ToolRow({ icon, title, subtitle, onTap }: { icon: string; title: string; subtitle: string; onTap: () => void }) {
   return (
     <Button buttonStyle="plain" action={onTap}>
-      <HStack alignment="top" spacing={spacing.md} padding={{ vertical: 11 }} frame={{ maxWidth: "infinity" }}>
+      <HStack alignment="top" spacing={spacing.md} padding={{ vertical: 11 }} frame={leadingFillFrame}>
         <Image systemName={icon} font="body" foregroundStyle={palette.accent} frame={{ width: 24 }} />
-        <VStack alignment="leading" spacing={2} frame={{ maxWidth: "infinity" }}>
+        <VStack alignment="leading" spacing={2} frame={leadingFillFrame}>
           <Text font="subheadline" multilineTextAlignment="leading">{title}</Text>
           <Text font="caption2" foregroundStyle={palette.tertiaryLabel} lineLimit={1} multilineTextAlignment="leading">
             {subtitle}
@@ -41,7 +41,7 @@ function ToolRow({ icon, title, subtitle, onTap }: { icon: string; title: string
   )
 }
 
-/** 首页：概览、模块列表与工具入口 */
+/** 首页 */
 export function HomePage({ go }: { go: Navigate }) {
   const { modules, loading, busy, folderPath, settings, refresh, updateAll, reload, showNotice } = useLibrary()
   const dismiss = Navigation.useDismiss()
@@ -73,11 +73,11 @@ export function HomePage({ go }: { go: Navigate }) {
             topBarLeading: <Button title="关闭" action={dismiss} />,
             topBarTrailing: <Button action={() => void refresh()} buttonStyle="plain" disabled={busy}><Image systemName="arrow.clockwise" /></Button>,
           }}
-          frame={{ maxWidth: "infinity", maxHeight: "infinity" }}
+          frame={fullFillFrame}
         >
-          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={{ maxWidth: "infinity" }}>
+          <VStack alignment="leading" spacing={spacing.lg} padding={spacing.lg} frame={leadingFillFrame}>
             <GlassCard sensoryFeedback={{ trigger: haptic, feedback: "impactSoft" }}>
-              <HStack alignment="top" spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+              <HStack alignment="top" spacing={spacing.sm} frame={leadingFillFrame}>
                 <StatTile label="模块" value={stats.total} tint={palette.secondaryLabel} />
                 <Divider frame={{ height: 28 }} />
                 <StatTile label="可更新" value={stats.withUrl} tint={palette.accent} />
@@ -85,7 +85,7 @@ export function HomePage({ go }: { go: Navigate }) {
                 <StatTile label="失败" value={stats.failed} tint={stats.failed > 0 ? palette.danger : palette.secondaryLabel} />
               </HStack>
 
-              <HStack alignment="top" spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+              <HStack alignment="top" spacing={spacing.sm} frame={leadingFillFrame}>
                 <Button
                   buttonStyle="glassProminent"
                   disabled={busy || loading}
@@ -110,7 +110,7 @@ export function HomePage({ go }: { go: Navigate }) {
                 if (!folderPath) return
                 void Pasteboard.setString(folderPath).then(() => showNotice("已复制模块目录"))
               }}>
-                <HStack spacing={6} padding={{ vertical: 2 }} frame={{ maxWidth: "infinity" }}>
+                <HStack spacing={6} padding={{ vertical: 2 }} frame={leadingFillFrame}>
                   <Image systemName="folder" font="caption" foregroundStyle={palette.tertiaryLabel} />
                   <Text font="caption2" foregroundStyle={palette.tertiaryLabel} lineLimit={1} truncationMode="middle">
                     {folderPath || "正在准备模块目录…"}
@@ -125,14 +125,14 @@ export function HomePage({ go }: { go: Navigate }) {
 
             {loading ? (
               <GlassCard>
-                <HStack alignment="top" spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+                <HStack alignment="top" spacing={spacing.sm} frame={leadingFillFrame}>
                   <Image systemName="hourglass" foregroundStyle={palette.secondaryLabel} />
                   <Text font="subheadline" foregroundStyle={palette.secondaryLabel} contentTransition="opacity">正在扫描模块目录…</Text>
                 </HStack>
               </GlassCard>
             ) : visibleModules.length === 0 ? (
               <GlassCard>
-                <VStack alignment="leading" spacing={spacing.sm} frame={{ maxWidth: "infinity" }}>
+                <VStack alignment="leading" spacing={spacing.sm} frame={leadingFillFrame}>
                   <Image systemName="tray" font="title" foregroundStyle={palette.tertiaryLabel} />
                   <Text font="headline" multilineTextAlignment="leading">目录里还没有模块</Text>
                   <Text font="caption" foregroundStyle={palette.secondaryLabel} multilineTextAlignment="leading">
@@ -145,13 +145,13 @@ export function HomePage({ go }: { go: Navigate }) {
               <GlassCard padding={{ horizontal: spacing.lg, vertical: spacing.md }} spacingValue={0}>
                 <LazyVStack spacing={0} animation={{ animation: motion.page, value: visibleModules.length }}>
                   {visibleModules.map((entry, index) => (
-                    <VStack key={entry.path} alignment="leading" spacing={0} transition={cardTransition} frame={{ maxWidth: "infinity" }}>
+                    <VStack key={entry.path} alignment="leading" spacing={0}  frame={leadingFillFrame}>
                       <Button buttonStyle="plain" action={() => go({ name: "detail", path: entry.path })}>
-                        <VStack alignment="leading" padding={{ vertical: spacing.md }} frame={{ maxWidth: "infinity" }}>
+                        <VStack alignment="leading" padding={{ vertical: spacing.md }} frame={leadingFillFrame}>
                           <ModuleRow entry={entry} />
                         </VStack>
                       </Button>
-                      {index < visibleModules.length - 1 ? <Rectangle fill={palette.hairline} frame={{ height: 0.5, maxWidth: "infinity" }} /> : null}
+                      {index < visibleModules.length - 1 ? <Rectangle fill={palette.hairline} frame={{ height: 0.5, minWidth: 0, idealWidth: "infinity", maxWidth: "infinity", alignment: "leading" }} /> : null}
                     </VStack>
                   ))}
                 </LazyVStack>

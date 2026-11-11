@@ -1,6 +1,6 @@
-import type { Color, LinearGradient, Shape, ShapeStyle } from "scripting"
+import type { Color, CommonViewProps, LinearGradient, Shape, ShapeStyle } from "scripting"
 
-/** 统一配色：全部使用 Scripting 的 Color 类型，避免样式字段类型不匹配 */
+/** 统一配色 */
 export const palette = {
   accent: "#0A84FF" as Color,
   accentSoft: "rgba(10,132,255,0.14)" as Color,
@@ -40,28 +40,44 @@ export const cardShape: Shape = { type: "rect", cornerRadius: radius.lg }
 /** 小控件形状 */
 export const chipShape: Shape = "capsule"
 
-/** 统一动效：所有状态切换共用，避免各处硬编码时长 */
+/**
+ * 统一铺满并左对齐。
+ * 只写 maxWidth: "infinity" 时，Scripting/SwiftUI 会把窄内容按默认 center 对齐，
+ * 这正是按钮和文字看起来“没靠左”的原因；必须显式给 alignment: "leading"。
+ */
+export const leadingFillFrame: NonNullable<CommonViewProps["frame"]> = {
+  minWidth: 0,
+  idealWidth: "infinity",
+  maxWidth: "infinity",
+  alignment: "leading",
+}
+
+/** 整页铺满（用于 ZStack 内的 ScrollView） */
+export const fullFillFrame: NonNullable<CommonViewProps["frame"]> = {
+  minWidth: 0,
+  idealWidth: "infinity",
+  maxWidth: "infinity",
+  minHeight: 0,
+  idealHeight: "infinity",
+  maxHeight: "infinity",
+  alignment: "topLeading",
+}
+
+/** 统一动效 */
 export const motion = {
-  /** 页面/卡片切换 */
   page: Animation.smooth({ duration: 0.3 }),
-  /** 列表项、文本变化 */
   quick: Animation.easeOut(0.2),
-  /** 数字滚动 */
   number: Animation.snappy({ duration: 0.32 }),
-  /** 按钮反馈 */
   tap: Animation.bouncy({ duration: 0.36, extraBounce: 0.12 }),
 }
 
-/** 页面插入/移除的轻量转场 */
-export const pageTransition: Transition = Transition.asymmetric(
-  Transition.opacity().combined(Transition.scale(0.985)),
-  Transition.opacity()
-)
+/** 页面插入/移除的轻量转场（不再使用，保留仅为兼容旧引用） */
+export const pageTransition: Transition = Transition.opacity()
 
-/** 列表与卡片出现 */
-export const cardTransition: Transition = Transition.opacity().combined(Transition.move("top"))
+/** 列表与卡片出现：只用透明度，避免页面切回时材质层短暂重影 */
+export const cardTransition: Transition = Transition.opacity()
 
-/** 正文卡片：Liquid Glass，默认不响应交互，材质对象做缓存避免重复构造 */
+/** 正文卡片：Liquid Glass，缓存实例避免重复构造 */
 let cachedCardGlass: UIGlass | null = null
 let cachedTintedGlass: UIGlass | null = null
 let cachedChipGlass: UIGlass | null = null
@@ -69,32 +85,21 @@ let cachedTintedChipGlass: UIGlass | null = null
 
 export function glassCard(tinted = false): { glass: UIGlass; shape: Shape } {
   if (tinted) {
-    if (!cachedTintedGlass) {
-      cachedTintedGlass = UIGlass.regular().interactive(false).tint(palette.accent)
-    }
+    if (!cachedTintedGlass) cachedTintedGlass = UIGlass.regular().interactive(false).tint(palette.accent)
     return { glass: cachedTintedGlass, shape: cardShape }
   }
-  if (!cachedCardGlass) {
-    cachedCardGlass = UIGlass.regular().interactive(false)
-  }
+  if (!cachedCardGlass) cachedCardGlass = UIGlass.regular().interactive(false)
   return { glass: cachedCardGlass, shape: cardShape }
 }
 
-/** 小控件玻璃：让按钮 / 徽标带材质互动 */
 export function glassChip(tinted = false): { glass: UIGlass; shape: Shape } {
-  if (!cachedChipGlass) {
-    cachedChipGlass = UIGlass.regular().interactive(true)
-  }
-  if (!tinted) {
-    return { glass: cachedChipGlass, shape: chipShape }
-  }
-  if (!cachedTintedChipGlass) {
-    cachedTintedChipGlass = cachedChipGlass.tint(palette.accent)
-  }
+  if (!cachedChipGlass) cachedChipGlass = UIGlass.regular().interactive(true)
+  if (!tinted) return { glass: cachedChipGlass, shape: chipShape }
+  if (!cachedTintedChipGlass) cachedTintedChipGlass = cachedChipGlass.tint(palette.accent)
   return { glass: cachedTintedChipGlass, shape: chipShape }
 }
 
-/** 兼容旧写法的材质背景（仅用于不适合玻璃的小元素） */
+/** 兼容旧写法的材质背景 */
 export function cardBackground(tinted = false): { style: ShapeStyle; shape: Shape } {
   return { style: tinted ? palette.accentSoft : "regularMaterial", shape: cardShape }
 }
@@ -110,14 +115,12 @@ export const pageGradient: LinearGradient = {
   endPoint: "bottomTrailing",
 }
 
-/** 主按钮的高亮渐变 */
 export const accentGradient: LinearGradient = {
   colors: ["#0A84FF" as Color, "#5E5CE6" as Color],
   startPoint: "leading",
   endPoint: "trailing",
 }
 
-/** 状态色映射 */
 export function statusColor(status: string): Color {
   switch (status) {
     case "success":

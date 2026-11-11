@@ -14,7 +14,7 @@ import {
 } from "../utils/moduleContent"
 import { ensureFolder } from "./settingsStore"
 
-/** stat 返回的时间可能是秒，统一成毫秒 */
+/** 统一成毫秒 */
 function toMillis(value: number): number {
   if (!value || value <= 0) {
     return 0
@@ -74,7 +74,7 @@ export async function scanModules(folderPath: string): Promise<ModuleEntry[]> {
   const entries: ModuleEntry[] = []
   let cursor = 0
 
-  // 并发 4 个读取任务：批量扫目录时避免串行等待 iCloud 下载
+  // 并发 4 个读取任务
   const workers = Array.from({ length: Math.min(4, Math.max(1, items.length)) }, async () => {
     while (true) {
       const index = cursor
@@ -126,7 +126,7 @@ export async function scanModules(folderPath: string): Promise<ModuleEntry[]> {
   return entries
 }
 
-/** 更新单个模块：读取本地 #SUBSCRIBED，拉取远端内容后回写 */
+/** 更新单个模块 */
 export async function updateModule(entry: ModuleEntry, settings: Settings): Promise<UpdateResult> {
   let localContent = ""
   try {
