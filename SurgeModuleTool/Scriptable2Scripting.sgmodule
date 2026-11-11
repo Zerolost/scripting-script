@@ -1,12 +1,14 @@
 #!name=Scriptable 链接转 Scripting
-#!desc=仅在常见脚本分发站点把 scriptable:// 改写为 scripting://，避免全局 MITM。
+#!desc=只对你指定的站点做 MITM 并改写 scriptable://，默认只含项目测试页所在 CDN。
+#!arguments=hosts:raw.githack.com
+#!arguments-desc=需要拦截的域名，逗号分隔。把你实际放安装链接的站点填进来，未填写的域名不会被解密。
 #!requirement=CORE_VERSION>=20
 
 [Body Rewrite]
-http-response ^https?://(script-hub\.netlify\.app|raw\.githubusercontent\.com|gist\.githubusercontent\.com|github\.com|gist\.github\.com|[^/]+\.github\.io)/ scriptable:///run_single/ scripting://run_single/ scriptable:///run/ scripting://run/ scriptable:/// scripting:// scriptable:// scripting://
+http-response ^https?:// scriptable:///run_single/ scripting://run_single/ scriptable:///run/ scripting://run/ scriptable:/// scripting:// scriptable:// scripting://
 
 [Header Rewrite]
-http-response ^https?://(script-hub\.netlify\.app|raw\.githubusercontent\.com|gist\.githubusercontent\.com|github\.com|gist\.github\.com|[^/]+\.github\.io)/ header-replace-regex Location scriptable:/// scripting://
+http-response ^https?:// header-replace-regex Location scriptable:/// scripting://
 
 [MITM]
-hostname = %APPEND% script-hub.netlify.app, raw.githubusercontent.com, gist.githubusercontent.com, github.com, gist.github.com, *.github.io
+hostname = %APPEND% {{{hosts}}}

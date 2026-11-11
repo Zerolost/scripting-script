@@ -2,18 +2,14 @@
 // ==UserScript==
 // @name         Scriptable → Scripting 链接跳转
 // @namespace    surge-module-tool
-// @version      1.2.0
-// @description  精准改写安装/调用页面中的 scriptable:// 链接为 scripting://
-// @match        https://github.com/*
-// @match        https://raw.githubusercontent.com/*
-// @match        https://gist.github.com/*
-// @match        https://script-hub.netlify.app/*
-// @match        https://*.github.io/*
+// @version      1.3.0
+// @description  把网页里的 scriptable:// 安装/调用链接改写为 scripting://
+// @match        *://*/*
 // @run-at       document-start
 // @grant        none
 // ==/UserScript==
 
-// 精准匹配：只在明确会给出 Scriptable 安装/调用链接的页面生效
+// 用户脚本只在本地改写 <a>，不发起任何网络请求；@match 放宽以保证任意站点都能生效。
 (function () {
   "use strict"
 
@@ -41,13 +37,12 @@
     }
   }
 
-  // 点击前再改写一次，覆盖未走 MutationObserver 的动态链接
+  // 点击前兜底改写一次
   function onClick(event) {
     var node = event.target
     while (node && node !== document) {
       if (node.tagName === "A" && node.href && String(node.href).indexOf("scriptable:") !== -1) {
-        var target = convert(node.getAttribute("href"))
-        node.setAttribute("href", target)
+        node.setAttribute("href", convert(node.getAttribute("href")))
         return
       }
       node = node.parentNode

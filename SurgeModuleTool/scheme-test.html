@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>scriptable → scripting 测试页</title>
+<style>
+  :root { color-scheme: dark; }
+  body { font: 16px/1.6 -apple-system, system-ui, sans-serif; background: #0b1020; color: #e8ecff; margin: 0; padding: 28px; }
+  .card { background: #161d33; border: 1px solid #26304d; border-radius: 18px; padding: 20px; margin-bottom: 18px; }
+  h1 { font-size: 22px; margin: 0 0 10px; }
+  p { color: #9aa6c8; margin: 8px 0; }
+  a.button { display: inline-block; margin-top: 10px; padding: 12px 18px; border-radius: 14px; background: #2d6cff; color: #fff; text-decoration: none; font-weight: 600; }
+  code { background: #0d1428; padding: 2px 6px; border-radius: 6px; color: #8fb4ff; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <h1>scriptable → scripting 测试页</h1>
+    <p>如果浏览器脚本生效，下面的链接在检查元素时应显示为 <code>scripting://run/...</code>。</p>
+    <a class="button" id="static" href="scriptable:///run/SurgeModuleTool?url=https%3A%2F%2Fraw.githubusercontent.com%2FScript-Hub-Org%2FScript-Hub%2Fmain%2Fboxjs.sgmodule&name=BoxJs">点击测试（静态链接）</a>
+  </div>
+
+  <div class="card">
+    <h1>动态插入链接</h1>
+    <p>3 秒后由脚本插入，用于测试 MutationObserver。</p>
+    <div id="slot"></div>
+  </div>
+
+  <script>
+    setTimeout(function () {
+      var a = document.createElement("a")
+      a.className = "button"
+      a.textContent = "点击测试（动态链接）"
+      a.href = "scriptable:///run_single/SurgeModuleTool?url=https%3A%2F%2Fexample.com%2Fa.sgmodule"
+      document.getElementById("slot").appendChild(a)
+    }, 3000)
+  </script>
+</body>
+</html>

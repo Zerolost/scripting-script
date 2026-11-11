@@ -21,29 +21,45 @@ https://github.com/Zerolost/scripting-script/tree/main/SurgeModuleTool
 
 ## 内置浏览器脚本
 
-`browser.tsx` 由 Scripting 构建为 Safari 浏览器脚本，`@match` 只覆盖脚本分发站点：
+`browser.tsx` 由 Scripting 构建为 Safari 浏览器脚本，`@match` 覆盖所有站点，但只在本地改写 `<a href>`，不发起任何网络请求：
 
-- `github.com` / `gist.github.com`
-- `raw.githubusercontent.com` / `gist.githubusercontent.com`
-- `script-hub.netlify.app`
-- `*.github.io`
+- 捕获阶段改写点击
+- 改写已有链接
+- `MutationObserver` 处理动态插入
+- 重写 `window.open`
 
-仅改写页面里的 `scriptable://` 链接，不注入 UI。
+> 它只能改“网页里的链接”。`raw.githubusercontent.com` 这类纯文本响应没有 `<a>`，因此不会也不应该被改写。
 
 ## Surge 模块
 
-仓库内附带 `Scriptable2Scripting.sgmodule`，MITM 只针对上述站点，不使用全局 `*`：
+`Scriptable2Scripting.sgmodule` 用参数表控制 MITM 范围，默认只包含测试页 CDN：
 
 ```ini
+#!arguments=hosts:raw.githack.com
+
 [MITM]
-hostname = %APPEND% script-hub.netlify.app, raw.githubusercontent.com, gist.githubusercontent.com, github.com, gist.github.com, *.github.io
+hostname = %APPEND% {{{hosts}}}
 ```
+
+安装后在 Surge 里编辑模块参数，填你实际放安装链接的域名（逗号分隔）。未填的域名不会被解密，也不会被改写。
 
 安装：
 
 ```text
 https://raw.githubusercontent.com/Zerolost/scripting-script/main/SurgeModuleTool/Scriptable2Scripting.sgmodule
 ```
+
+## 实测拦截
+
+GitHub 会过滤 `scriptable:` 协议，所以 GitHub 页面不适合验证。用仓库自带的测试页：
+
+```text
+https://raw.githack.com/Zerolost/scripting-script/main/SurgeModuleTool/scheme-test.html
+```
+
+- Safari + 浏览器脚本：打开上面地址，点击按钮应跳到 Scripting。
+- Surge：模块 `hosts` 保留 `raw.githack.com`，打开同一地址点击按钮。
+- 页面里的动态链接会在 3 秒后插入，用来验证 MutationObserver。
 
 ## 结构
 
