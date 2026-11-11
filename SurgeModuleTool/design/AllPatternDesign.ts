@@ -1,6 +1,5 @@
 import type { Color, CommonViewProps, LinearGradient, Shape, ShapeStyle } from "scripting"
 
-/** 统一配色 */
 export const palette = {
   accent: "#0A84FF" as Color,
   accentSoft: "rgba(10,132,255,0.14)" as Color,
@@ -16,35 +15,18 @@ export const palette = {
   tertiaryLabel: "tertiaryLabel" as Color,
 }
 
-/** 间距刻度 */
-export const spacing = {
-  xs: 4,
-  sm: 8,
-  md: 12,
-  lg: 16,
-  xl: 22,
-  xxl: 30,
-}
+export const spacing = { xs: 4, sm: 8, md: 12, lg: 16, xl: 22, xxl: 30 }
+export const radius = { sm: 10, md: 16, lg: 22, xl: 28 }
 
-/** 圆角刻度 */
-export const radius = {
-  sm: 10,
-  md: 16,
-  lg: 22,
-  xl: 28,
-}
-
-/** 卡片形状 */
 export const cardShape: Shape = { type: "rect", cornerRadius: radius.lg }
-
-/** 小控件形状 */
 export const chipShape: Shape = "capsule"
 
-/**
- * 统一铺满并左对齐。
- * 只写 maxWidth: "infinity" 时，Scripting/SwiftUI 会把窄内容按默认 center 对齐，
- * 这正是按钮和文字看起来“没靠左”的原因；必须显式给 alignment: "leading"。
- */
+/** 所有卡片都使用同一个内边距，避免“工具卡”宽度/高度看起来不同 */
+export const cardInsets: NonNullable<CommonViewProps["padding"]> = {
+  horizontal: spacing.lg,
+  vertical: spacing.md,
+}
+
 export const leadingFillFrame: NonNullable<CommonViewProps["frame"]> = {
   minWidth: 0,
   idealWidth: "infinity",
@@ -52,7 +34,6 @@ export const leadingFillFrame: NonNullable<CommonViewProps["frame"]> = {
   alignment: "leading",
 }
 
-/** 整页铺满（用于 ZStack 内的 ScrollView） */
 export const fullFillFrame: NonNullable<CommonViewProps["frame"]> = {
   minWidth: 0,
   idealWidth: "infinity",
@@ -63,7 +44,6 @@ export const fullFillFrame: NonNullable<CommonViewProps["frame"]> = {
   alignment: "topLeading",
 }
 
-/** 统一动效 */
 export const motion = {
   page: Animation.smooth({ duration: 0.3 }),
   quick: Animation.easeOut(0.2),
@@ -71,40 +51,33 @@ export const motion = {
   tap: Animation.bouncy({ duration: 0.36, extraBounce: 0.12 }),
 }
 
-/** 页面插入/移除的轻量转场（不再使用，保留仅为兼容旧引用） */
+/** 保留最小集合，均为模块级常量，避免重复创建 */
 export const pageTransition: Transition = Transition.opacity()
-
-/** 列表与卡片出现：只用透明度，避免页面切回时材质层短暂重影 */
 export const cardTransition: Transition = Transition.opacity()
 
-/** 正文卡片：Liquid Glass，缓存实例避免重复构造 */
-let cachedCardGlass: UIGlass | null = null
-let cachedTintedGlass: UIGlass | null = null
-let cachedChipGlass: UIGlass | null = null
-let cachedTintedChipGlass: UIGlass | null = null
+const cardGlass = UIGlass.regular().interactive(false)
+const tintedCardGlass = cardGlass.tint(palette.accent)
+const chipGlass = UIGlass.regular().interactive(true)
+const tintedChipGlass = chipGlass.tint(palette.accent)
+
+/** 返回值也缓存，避免每次渲染生成 {glass, shape} */
+export const glassCardNormal = { glass: cardGlass, shape: cardShape }
+export const glassCardTinted = { glass: tintedCardGlass, shape: cardShape }
+export const glassChipNormal = { glass: chipGlass, shape: chipShape }
+export const glassChipTinted = { glass: tintedChipGlass, shape: chipShape }
 
 export function glassCard(tinted = false): { glass: UIGlass; shape: Shape } {
-  if (tinted) {
-    if (!cachedTintedGlass) cachedTintedGlass = UIGlass.regular().interactive(false).tint(palette.accent)
-    return { glass: cachedTintedGlass, shape: cardShape }
-  }
-  if (!cachedCardGlass) cachedCardGlass = UIGlass.regular().interactive(false)
-  return { glass: cachedCardGlass, shape: cardShape }
+  return tinted ? glassCardTinted : glassCardNormal
 }
 
 export function glassChip(tinted = false): { glass: UIGlass; shape: Shape } {
-  if (!cachedChipGlass) cachedChipGlass = UIGlass.regular().interactive(true)
-  if (!tinted) return { glass: cachedChipGlass, shape: chipShape }
-  if (!cachedTintedChipGlass) cachedTintedChipGlass = cachedChipGlass.tint(palette.accent)
-  return { glass: cachedTintedChipGlass, shape: chipShape }
+  return tinted ? glassChipTinted : glassChipNormal
 }
 
-/** 兼容旧写法的材质背景 */
 export function cardBackground(tinted = false): { style: ShapeStyle; shape: Shape } {
   return { style: tinted ? palette.accentSoft : "regularMaterial", shape: cardShape }
 }
 
-/** 页面背景渐变 */
 export const pageGradient: LinearGradient = {
   colors: [
     "rgba(10,132,255,0.22)" as Color,
@@ -124,15 +97,12 @@ export const accentGradient: LinearGradient = {
 export function statusColor(status: string): Color {
   switch (status) {
     case "success":
-    case "up-to-date":
-      return palette.success
-    case "failed":
-      return palette.danger
-    case "no-url":
-      return palette.warning
-    case "updating":
-      return palette.accent
-    default:
-      return palette.neutralSoft
+    case "up-to-date": return palette.success
+    case "failed": return palette.danger
+    case "no-url": return palette.warning
+    case "updating": return palette.accent
+    default: return palette.neutralSoft
   }
 }
+
+/** 主动触觉已移除：统一使用 SwiftUI 的 sensoryFeedback，由系统决定强度与时机 */

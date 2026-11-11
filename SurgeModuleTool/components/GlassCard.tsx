@@ -1,22 +1,20 @@
 import { VStack, type CommonViewProps, type VirtualNode } from "scripting"
-import { glassCard, leadingFillFrame, motion, spacing } from "../design/AllPatternDesign"
+import { cardInsets, glassCard, leadingFillFrame, motion } from "../design/AllPatternDesign"
 
 type CardChildren =
   | VirtualNode
   | (VirtualNode | boolean | undefined | null | (VirtualNode | undefined | null | boolean)[])[]
 
-/** Liquid Glass 卡片容器 */
+/** 所有卡片统一使用相同 padding 和 frame；不再支持自定义内边距造成宽度差异 */
 export function GlassCard({
   children,
   tinted = false,
-  padding = spacing.lg,
-  spacingValue = spacing.md,
+  spacingValue = 12,
   sensoryFeedback,
   animationValue,
 }: {
   children: CardChildren
   tinted?: boolean
-  padding?: CommonViewProps["padding"]
   spacingValue?: number
   sensoryFeedback?: CommonViewProps["sensoryFeedback"]
   animationValue?: number
@@ -25,7 +23,7 @@ export function GlassCard({
     <VStack
       alignment="leading"
       spacing={0}
-      padding={padding}
+      padding={cardInsets}
       frame={leadingFillFrame}
       glassEffect={glassCard(tinted)}
     >

@@ -1,7 +1,7 @@
 import type { Settings } from "../types"
 
 /** 工具版本，与原 Scriptable 版保持一致的语义版本 */
-export const TOOL_VERSION = "3.1.0"
+export const TOOL_VERSION = "3.2.0"
 
 /** 原版工具使用的请求头 */
 export const DEFAULT_USER_AGENT = "script-hub/1.0.0"

@@ -206,7 +206,7 @@ export async function updateModule(entry: ModuleEntry, settings: Settings): Prom
   }
 }
 
-/** 批量更新，逐个回调以便界面实时刷新 */
+/** 批量更新 */
 export async function updateAllModules(
   entries: ModuleEntry[],
   settings: Settings,

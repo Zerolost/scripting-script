@@ -6,7 +6,7 @@
     "zh" : "Surge 模块更新器：批量更新带 #SUBSCRIBED 的本地模块、从链接安装，并通过 Surge 模块与内置浏览器脚本把 scriptable:\/\/ 跳转到 scripting:\/\/。"
   },
   "remoteDefinitionId" : null,
-  "version" : "3.1.0",
+  "version" : "3.2.0",
   "name" : "1",
   "intentInputTypes" : [
     "texts",

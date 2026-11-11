@@ -1,16 +1,12 @@
 #!name=Scriptable 链接转 Scripting
-#!desc=把 HTTP 响应里的 scriptable:// 链接改写为 scripting://，让 Scriptable 的安装/调用链接直接交给 Scripting 处理。需要开启 MITM 并信任 Surge 证书。
-#!arguments=hostname:*
-#!arguments-desc=需要解密的域名，逗号分隔；* 表示全部（默认已排除 Apple/iCloud 等无法解密的域名）。只拦截某个站点时，建议把这里改成该站域名。
+#!desc=仅在常见脚本分发站点把 scriptable:// 改写为 scripting://，避免全局 MITM。
 #!requirement=CORE_VERSION>=20
 
 [Body Rewrite]
-http-response ^https?:// scriptable:///run_single/ scripting://run_single/ scriptable:///run/ scripting://run/ scriptable:/// scripting:// scriptable:// scripting://
+http-response ^https?://(script-hub\.netlify\.app|raw\.githubusercontent\.com|gist\.githubusercontent\.com|github\.com|gist\.github\.com|[^/]+\.github\.io)/ scriptable:///run_single/ scripting://run_single/ scriptable:///run/ scripting://run/ scriptable:/// scripting:// scriptable:// scripting://
 
 [Header Rewrite]
-http-response ^https?:// header-replace-regex Location scriptable:///run_single/ scripting://run_single/
-http-response ^https?:// header-replace-regex Location scriptable:///run/ scripting://run/
-http-response ^https?:// header-replace-regex Location scriptable:/// scripting://
+http-response ^https?://(script-hub\.netlify\.app|raw\.githubusercontent\.com|gist\.githubusercontent\.com|github\.com|gist\.github\.com|[^/]+\.github\.io)/ header-replace-regex Location scriptable:/// scripting://
 
 [MITM]
-hostname = %APPEND% -*.apple.com, -*.icloud.com, -*.mzstatic.com, -*.crashlytics.com, {{{hostname}}}
+hostname = %APPEND% script-hub.netlify.app, raw.githubusercontent.com, gist.githubusercontent.com, github.com, gist.github.com, *.github.io

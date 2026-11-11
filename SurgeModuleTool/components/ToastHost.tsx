@@ -33,6 +33,10 @@ export function ToastHost(): ReturnType<typeof VStack> {
           multilineTextAlignment="leading"
           contentTransition="opacity"
           animation={{ animation: motion.quick, value: notice }}
+          sensoryFeedback={{
+            trigger: notice ?? "",
+            feedback: notice?.startsWith("❌") ? "error" : notice?.startsWith("🈚️") ? "warning" : "success",
+          }}
         >
           {notice}
         </Text>

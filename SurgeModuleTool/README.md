@@ -1,10 +1,8 @@
 # Surge 模块工具（Scripting 版）
 
-Surge 本地模块批量更新器，内置 `scriptable:// → scripting://` 的 Safari 浏览器脚本。
+Surge 本地模块批量更新器，附带 `scriptable:// → scripting://` 的 Safari 浏览器脚本与精简版 Surge 模块。
 
 ## 导入
-
-在 Scripting 中导入项目目录：
 
 ```text
 https://github.com/Zerolost/scripting-script/tree/main/SurgeModuleTool
@@ -12,60 +10,65 @@ https://github.com/Zerolost/scripting-script/tree/main/SurgeModuleTool
 
 ## 功能
 
-| 功能 | 说明 |
-| --- | --- |
-| 更新全部 | 扫描模块目录，逐个读取 `#SUBSCRIBED` 并回写最新内容 |
-| 更新单个 | 模块详情页单独更新，可分享到 Surge |
-| 从链接安装 | 下载远端模块并保存为本地 `.sgmodule` |
-| URL Scheme | `scripting://run/SurgeModuleTool?url=&name=` 直接安装 |
-| 目录书签 | 选一次目录，之后跨启动可读写 |
-| 重载 Surge | 请求 `http://script.hub/reload` |
+- **更新全部**：扫描模块目录，逐个读取 `#SUBSCRIBED` 并回写
+- **更新单个**：详情页更新、分享到 Surge、复制订阅链接、删除
+- **从链接安装**：下载远端模块并保存为本地 `.sgmodule`
+- **URL Scheme**：`scripting://run/SurgeModuleTool?url=&name=`
+- **目录书签**：选一次目录，重启仍可读写
+- **重载 Surge**：请求 `http://script.hub/reload`
 
-更新算法与 Script-Hub 的 `SurgeModuleTool.js` 一致：
-
-1. 读取 `#SUBSCRIBED <url>`
-2. 下载远端内容并校验 `#!name`
-3. 移除旧的 `#SUBSCRIBED` 与 `# 🔗 模块链接` 区块
-4. 在最后一条 `#!` 指令后插入新的链接区块
-5. `#!desc` 写入 `🔗 [时间] 原描述`
-6. 回写文件；扫描跳过 `.conf / .txt / .js / .list`
+更新算法与 Script-Hub 的 `SurgeModuleTool.js` 一致。
 
 ## 内置浏览器脚本
 
-项目自带 `browser.tsx`，Scripting 会把它构建为 Safari 浏览器脚本。在 Safari 扩展里启用即可：
+`browser.tsx` 由 Scripting 构建为 Safari 浏览器脚本，`@match` 只覆盖脚本分发站点：
 
-- 捕获阶段拦截 `scriptable://` 点击并改写为 `scripting://`
-- 改写页面内已有链接，右键复制也是 `scripting://`
-- `MutationObserver` 处理动态插入
-- 重写 `window.open`
+- `github.com` / `gist.github.com`
+- `raw.githubusercontent.com` / `gist.githubusercontent.com`
+- `script-hub.netlify.app`
+- `*.github.io`
 
-> 原生 App 直接调用 `UIApplication.open("scriptable://")` 无法拦截（非越狱限制）。
+仅改写页面里的 `scriptable://` 链接，不注入 UI。
+
+## Surge 模块
+
+仓库内附带 `Scriptable2Scripting.sgmodule`，MITM 只针对上述站点，不使用全局 `*`：
+
+```ini
+[MITM]
+hostname = %APPEND% script-hub.netlify.app, raw.githubusercontent.com, gist.githubusercontent.com, github.com, gist.github.com, *.github.io
+```
+
+安装：
+
+```text
+https://raw.githubusercontent.com/Zerolost/scripting-script/main/SurgeModuleTool/Scriptable2Scripting.sgmodule
+```
 
 ## 结构
 
-```
-index.tsx                入口：解析 queryParameters
-app.tsx                  内部路由与全局提示
+```text
+index.tsx                入口
+app.tsx                  NavigationStack path 路由
 browser.tsx              内置 Safari 浏览器脚本
+Scriptable2Scripting.sgmodule  Surge 模块
 pages/                   首页 / 添加 / 详情 / 设置
-components/              GlassCard、ModuleRow、StatusBadge、StatTile、ToastHost
+components/              GlassCard、ModuleRow、StatTile、TopToolbar、ToastHost
 contexts/                全局状态 + Toast 独立上下文
 services/                更新、目录、设置
-utils/                   模块解析与格式化（纯函数）
-design/AllPatternDesign  Liquid Glass 与动效令牌
-tests/logic.test.ts      逻辑回归
+utils/                   模块解析与格式化
+design/AllPatternDesign  Liquid Glass、动效与 frame 令牌
 ```
 
 ## 设计
 
-- iOS 26 Liquid Glass（`UIGlass.regular()` + `glassEffect`），实例已缓存
-- 全屏渐变背景，导航栏背景隐藏
-- 顶部 ToolBar：父页左侧关闭，子页左侧返回，右侧固定刷新
-- 卡片统一铺满并左对齐；按钮与文本不使用居中排版
-- 文本、数字、图标、卡片和列表均有动画
-- 列表 `LazyVStack`、目录扫描 4 路并发、Toast 独立 Context
+- iOS 26 Liquid Glass；玻璃实例与 `{glass, shape}` 均模块级缓存
+- 页面切换使用系统 `NavigationStack` push/pop，返回/关闭天然带转场
+- ToolBar：根页左侧 `xmark`，子页左侧系统返回，右侧统一刷新
+- 所有卡片同一内边距、同一 `leadingFillFrame`，左对齐不居中
+- 动画：数字 `numericText`、文本 `opacity`、图标 `symbolEffect`、列表状态
+- 震动：只用 SwiftUI `sensoryFeedback`，不放在高频点击上
 
 ## 校验
 
-- TypeScript 诊断：0 项
-- `scripting-ts run tests/logic.test.ts`：22 项通过
+TypeScript 诊断 0 项。
