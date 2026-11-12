@@ -61,28 +61,13 @@ http://script.hub/file/_start_/<源链接>/_end_/<文件名><后缀>?target=<tar
 | Loon | `Scriptable2Scripting.plugin` |
 | Stash | `Scriptable2Scripting.stoverride` |
 
-四份实现都做三件事：
+四份实现的共同功能：
 
 1. 把 `scriptable://` 安装链接改写为 `scripting://`
 2. 去掉 `target="_blank"`，避免 iOS Safari 在新标签页里打开自定义协议时报「网址无效」
 3. **追加** Loon / Stash / Shadowrocket 的「本地模块」按钮，原有远程导入按钮保持不变
 
 > 文件名沿用历史命名 `Scriptable2Scripting.*`，与 Scriptable App 无关。
-
-### 为什么用响应脚本而不是 Body Rewrite
-
-Surge 的 `[Body Rewrite]` token 用空格分隔，正则和替换文本都不能含空格；要新增一个带 `style`、`v-if`、`:href` 的 `<a>`，替换文本必然含空格。所以改用各 App 都支持的 `http-response` 脚本：
-
-- Surge / Shadowrocket：`[Script]` + `script-path=.../local-module.js`
-- Loon：`[Script]` + `http-response ... requires-body=true`
-- Stash：`script-providers` + `http.script`（`type: response`、`require-body: true`）
-
-`local-module.js` 只在响应体里插入 Vue 锚点，不发起网络请求。注入后的结构：
-
-```html
-<a v-if="result && target === 'loon-plugin' " :href=" 'https://www.nsloon.com/openloon/import?plugin=' + encodeURIComponent(result) " target="_blank">导入(Loon)</a>
-<a v-if="result && target === 'loon-plugin'" :href="'scripting://run/ModuleDock?target=loon-plugin&url=' + encodeURIComponent(result) + '&name=' + encodeURIComponent(filename)" style="margin: 0 0.5rem 0 0; font-weight: 600;">导入 Loon(本地插件 需配合 Scripting)</a>
-```
 
 ## 内置浏览器脚本
 
@@ -94,15 +79,6 @@ Surge 的 `[Body Rewrite]` token 用空格分隔，正则和替换文本都不�
 - `MutationObserver` 处理动态插入
 - 为三个远程导入按钮注入「本地模块」兄弟节点（保留原按钮；响应脚本已注入时自动跳过）
 - 重写 `window.open`
-
-## 性能
-
-- **图标本地缓存**：四个 App 的 PNG 启动时下载到 App Group，列表只读 `filePath`，不在每行发起网络请求
-- **扫描缓存**：按 `path + mtime + size` 复用上次解析结果，刷新只读变化的文件
-- **静默刷新**：只有首次进入显示骨架屏，后续刷新不再卸载列表
-- **轻量列表**：列表容器用纯色圆角背景，行内状态徽标用纯色胶囊，减少大面积 Liquid Glass 合成
-- **批量更新**：每 4 条结果合并一次状态，减少列表重渲染
-- **详情页延迟读盘**：列表里找不到时延迟一拍读文件，避免阻塞页面推入动画
 
 ## 结构
 
@@ -124,16 +100,6 @@ design/AllPatternDesign  Liquid Glass、动效与 frame 令牌
 constants/               index、targets、appIcons
 types/index.ts           数据类型
 ```
-
-## 设计
-
-- iOS 26 Liquid Glass；玻璃实例与 `{glass, shape}` 均模块级缓存
-- 卡片用 `GlassCard`（圆角 22）；路径、错误、代码、来源等文本承载框统一用 `GlassText`
-- 页面切换使用系统 `NavigationStack` push/pop
-- ToolBar：根页左侧 `xmark`，子页左侧系统返回，右侧统一刷新
-- 所有卡片同一内边距、同一 `leadingFillFrame`，左对齐不居中
-- 动画：数字 `numericText`、文本 `opacity`、图标 `symbolEffect`
-- 震动：只用 SwiftUI `sensoryFeedback`，不放在高频点击上
 
 ## 校验
 
