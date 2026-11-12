@@ -7,7 +7,7 @@ Scripting 版的本地模块管理器，支持 **Surge / Loon / Stash / Shadowro
 - 四份反劫持模块，把 Script-Hub 的 `scriptable://` 链接改写成 `scripting://`
 - 内置 Safari 浏览器脚本，给 Loon / Stash / Shadowrocket 追加「本地模块」按钮
 
-## 导入
+## 导入(也可[点击此处](https://www.scripting.fun/import_scripts/?urls=%5B%22https%3A%2F%2Fgithub.com%2FZerolost%2Fscripting-script%2Ftree%2Fmain%2FModuleDock%22%5D)直接跳转到 Scripting 安装)
 
 ```text
 https://github.com/Zerolost/scripting-script/tree/main/ModuleDock
