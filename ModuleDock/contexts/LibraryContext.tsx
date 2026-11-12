@@ -144,7 +144,14 @@ export function LibraryProvider({
         const result = await updateModule(entry, settings)
         setModules(current => mergeEntry(current, result.entry))
         if (result.ok) {
-          showNotice(`✅ ${result.entry.name} 已更新`)
+          const changes: string[] = []
+          if (result.changedName) {
+            changes.push(`名称：${entry.name} → ${result.entry.name}`)
+          }
+          if (result.changedDesc) {
+            changes.push(`描述已更新`)
+          }
+          showNotice(changes.length > 0 ? `✅ ${result.entry.name} 已更新 · ${changes.join(" · ")}` : `✅ ${result.entry.name} 已更新`)
         } else if (result.reason === "no-url") {
           showNotice(`🈚️ ${entry.fileName} 没有订阅链接`)
         } else {

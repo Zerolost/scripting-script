@@ -7,6 +7,7 @@ import {
   EGERN_INSTALL_PREFIX,
   LOON_INSTALL_PREFIX,
   REMOTE_MODULE_URLS,
+  REPO_DIR_URL,
   SHADOWROCKET_INSTALL_PREFIX,
   STASH_INSTALL_PREFIX,
   SURGE_INSTALL_PREFIX,
@@ -18,6 +19,8 @@ import { useIconPaths } from "../contexts/IconContext"
 import { useLibrary } from "../contexts/LibraryContext"
 import { fullFillFrame, leadingFillFrame, motion, pageGradient, palette, spacing } from "../design/AllPatternDesign"
 import { candidateFolders } from "../services/settingsStore"
+import { openSurge } from "../services/moduleService"
+import { checkScriptUpdate, type VersionCheck } from "../services/updateCheck"
 import type { Navigate, TargetId } from "../types"
 
 /** 拼出目标 App 的远程安装链接 */
@@ -37,6 +40,19 @@ export function SettingsPage({ go }: { go: Navigate }) {
   const [ua, setUa] = useState<string>(settings.userAgent)
   const folders = useMemo(() => candidateFolders(), [])
   const icons = useIconPaths()
+  const [version, setVersion] = useState<VersionCheck | null>(null)
+  const [checking, setChecking] = useState<boolean>(false)
+
+  async function checkVersion() {
+    setChecking(true)
+    try {
+      const result = await checkScriptUpdate()
+      setVersion(result)
+      showNotice(result.error ? `检查失败：${result.error}` : result.outdated ? `发现新版本 ${result.remote}` : "已是最新版本")
+    } finally {
+      setChecking(false)
+    }
+  }
 
   return (
     <ZStack>
@@ -186,6 +202,40 @@ export function SettingsPage({ go }: { go: Navigate }) {
           </GlassCard>
 
           <GlassCard>
+            <Text font="headline">脚本更新</Text>
+            <GlassText>
+              <Text font="caption" foregroundStyle={palette.secondaryLabel}>
+                当前版本 {TOOL_VERSION}
+              </Text>
+              <Text font="caption" foregroundStyle={palette.secondaryLabel} contentTransition="opacity">
+                {version
+                  ? version.remote
+                    ? `远端版本 ${version.remote}${version.outdated ? "（有新版本）" : "（已最新）"}`
+                    : `检查失败：${version.error ?? "未知错误"}`
+                  : "未检查"}
+              </Text>
+            </GlassText>
+            <HStack spacing={spacing.sm} frame={leadingFillFrame}>
+              <Button
+                title={checking ? "检查中…" : "检查更新"}
+                systemImage="arrow.triangle.2.circlepath"
+                buttonStyle="glass"
+                disabled={checking}
+                action={() => void checkVersion()}
+              />
+              <Button
+                title="重新导入脚本"
+                systemImage="square.and.arrow.down"
+                buttonStyle="glassProminent"
+                action={() => void Safari.openURL(REPO_DIR_URL)}
+              />
+            </HStack>
+            <Text font="caption2" foregroundStyle={palette.tertiaryLabel}>
+              脚本由 Scripting 管理，更新时重新导入一次仓库目录即可；本地模块与设置不受影响。
+            </Text>
+          </GlassCard>
+
+          <GlassCard>
             <Text font="headline">关于</Text>
             <HStack spacing={spacing.sm} frame={leadingFillFrame}>
               <Image systemName="info.circle" foregroundStyle={palette.secondaryLabel} />
@@ -201,6 +251,12 @@ export function SettingsPage({ go }: { go: Navigate }) {
               systemImage="safari"
               buttonStyle="glass"
               action={() => void Safari.openURL(SURGE_MODULE_STORE_URL)}
+            />
+            <Button
+              title="打开 Surge"
+              systemImage="bolt.fill"
+              buttonStyle="glass"
+              action={() => void openSurge()}
             />
           </GlassCard>
         </VStack>

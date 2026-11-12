@@ -1,7 +1,7 @@
 import type { Settings, TargetId } from "../types"
 
 /** 工具版本，与原 Scriptable 版保持一致的语义版本 */
-export const TOOL_VERSION = "3.5.0"
+export const TOOL_VERSION = "3.6.0"
 
 /** 原版工具使用的请求头 */
 export const DEFAULT_USER_AGENT = "script-hub/1.0.0"
@@ -46,6 +46,13 @@ export const REMOTE_MODULE_URLS: Record<TargetId, string> = {
   stash: `${MODULE_BASE_URL}/Scriptable2Scripting.stoverride`,
   shadowrocket: `${MODULE_BASE_URL}/Scriptable2Scripting.shadowrocket.sgmodule`,
 }
+
+/** 仓库目录（用于重新导入/更新脚本） */
+export const REPO_DIR_URL = "https://github.com/Zerolost/scripting-script/tree/main/ModuleDock"
+
+/** 远端 script.json，用于比较版本 */
+export const REMOTE_SCRIPT_JSON_URL =
+  "https://raw.githubusercontent.com/Zerolost/scripting-script/main/ModuleDock/script.json"
 
 /** Surge 安装远程模块 */
 export const SURGE_INSTALL_PREFIX = "surge:///install-module?url="

@@ -183,7 +183,7 @@ export function HomePage({ go }: { go: Navigate }) {
           </GlassCard>
 
           <Text font="caption2" foregroundStyle={palette.tertiaryLabel} multilineTextAlignment="leading">
-            v3.5.0 · 四端本地模块管理
+            v3.6.0 · 四端本地模块管理
           </Text>
         </VStack>
       </ScrollView>

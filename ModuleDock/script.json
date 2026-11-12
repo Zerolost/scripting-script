@@ -23,7 +23,7 @@
     "urls"
   ],
   "color" : "rgba(10, 132, 255, 1)",
-  "version" : "3.5.0",
+  "version" : "3.6.0",
   "entry" : "index.tsx",
   "description" : "Local module updater for Surge, Loon, Stash and Shadowrocket: batch-update #SUBSCRIBED modules, install from URL with automatic target detection, and redirect scriptable:\/\/ links to scripting:\/\/ with four companion modules plus a built-in Safari browser script.",
   "icon" : "square.2.layers.3d.fill",

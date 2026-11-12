@@ -32,8 +32,20 @@ http://script.hub/file/_start_/<源链接>/_end_/<文件名><后缀>?target=<tar
 
 ## 功能
 
+与原版 Scriptable 的 `SurgeModuleTool.js` 对齐，并扩展到四端：
+
+| 原版功能 | ModuleDock |
+| --- | --- |
+| 更新全部模块 | 首页「更新全部」 |
+| 更新单个模块 | 详情页「更新」 |
+| 从链接创建 | 「从链接安装」 |
+| URL Scheme `?url=&name=` | 同类，另支持 `target=` |
+| 重载 Surge / 打开 Surge | 首页「重载 Surge」、设置页「打开 Surge」 |
+| 更新本脚本 | 设置页「检查更新」+「重新导入脚本」 |
+
 - **更新全部**：扫描目录，逐个读取 `#SUBSCRIBED` 并回写
 - **更新单个**：详情页更新、远程导入、分享本地文件、复制链接、删除
+- **名称变化提示**：更新后提示 `旧名称 → 新名称`
 - **从链接安装**：保存为对应目标的文件；同名不同源自动另存 `-1`
 - **目标识别**：`target` 参数 → 路径后缀 → 文件内容（`# @target` / YAML）
 - **直接粘贴导入链接**：支持 `surge://`、`loon://`、`stash://`、`shadowrocket://` 与 Script-Hub 的包装链接
@@ -68,6 +80,14 @@ http://script.hub/file/_start_/<源链接>/_end_/<文件名><后缀>?target=<tar
 3. **追加** Loon / Stash / Shadowrocket 的「本地模块」按钮，原有远程导入按钮保持不变
 
 > 文件名沿用历史命名 `Scriptable2Scripting.*`，与 Scriptable App 无关。
+
+### Egern 为何没有「本地模块」按钮
+
+Script-Hub 页面上 Egern 只提供「导入 Egern(远程模块)」，因为它复用 `surge-module` 的结果（`.sgmodule`），而 Egern 的本地模块是 YAML 片段，两者格式不同，Script-Hub 不做这种转换。所以本工具与页面注入都只给 Egern 提供远程导入：
+
+```text
+egern:///modules/new?url=<encode(.sgmodule 直链)>
+```
 
 ## 内置浏览器脚本
 
