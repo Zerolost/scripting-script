@@ -156,7 +156,11 @@ export function HomePage({ go }: { go: Navigate }) {
                 {visibleModules.map((entry, index) => (
                   <VStack key={entry.path} alignment="leading" spacing={0} frame={leadingFillFrame}>
                     <Button buttonStyle="plain" action={() => go({ name: "detail", path: entry.path })}>
-                      <VStack alignment="leading" padding={{ vertical: spacing.md }} frame={leadingFillFrame}>
+                      <VStack
+                        alignment="leading"
+                        padding={{ horizontal: spacing.lg, vertical: spacing.md }}
+                        frame={leadingFillFrame}
+                      >
                         <ModuleRow entry={entry} />
                       </VStack>
                     </Button>
