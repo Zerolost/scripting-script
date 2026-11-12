@@ -1,0 +1,31 @@
+{
+  "author" : {
+    "name" : "ModuleDock for Scripting",
+    "homepage" : "https:\/\/github.com\/Script-Hub-Org\/Script-Hub",
+    "email" : null
+  },
+  "runInApp" : false,
+  "name" : "ModuleDock",
+  "contributors" : [
+
+  ],
+  "localizedDescriptions" : {
+    "zh" : "本地模块更新器：支持 Surge 模块、Loon 插件、Stash 覆写与 Shadowrocket 模块，批量更新 #SUBSCRIBED、从链接安装并自动识别目标，同时把 scriptable:\/\/ 跳转到 scripting:\/\/。"
+  },
+  "iconImage" : "",
+  "remoteDefinitionId" : null,
+  "permissions" : null,
+  "localizedNames" : {
+    "zh" : "模块坞"
+  },
+  "intentInputTypes" : [
+    "texts",
+    "urls"
+  ],
+  "color" : "rgba(10, 132, 255, 1)",
+  "version" : "3.5.0",
+  "entry" : "index.tsx",
+  "description" : "Local module updater for Surge, Loon, Stash and Shadowrocket: batch-update #SUBSCRIBED modules, install from URL with automatic target detection, and redirect scriptable:\/\/ links to scripting:\/\/ with four companion modules plus a built-in Safari browser script.",
+  "icon" : "square.2.layers.3d.fill",
+  "remoteResource" : null
+}
