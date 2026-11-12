@@ -19,6 +19,23 @@ export function cachedIconPath(id: IconKey): string | null {
   return cache.get(id) ?? null
 }
 
+const ALL_KEYS: IconKey[] = [...TARGET_ORDER, "egern"]
+
+/** 同步读取已有缓存，首帧就能显示出图标 */
+export function initialIconPaths(): Record<IconKey, string | null> {
+  const result = {} as Record<IconKey, string | null>
+  for (const id of ALL_KEYS) {
+    const path = iconFilePath(id)
+    if (FileManager.existsSync(path)) {
+      cache.set(id, path)
+      result[id] = path
+    } else {
+      result[id] = null
+    }
+  }
+  return result
+}
+
 async function ensureDir(): Promise<void> {
   if (!FileManager.existsSync(ICON_DIR)) {
     await FileManager.createDirectory(ICON_DIR, true)
@@ -56,7 +73,7 @@ export async function loadIcons(): Promise<Record<IconKey, string | null>> {
   } catch (error) {
     console.log("创建图标目录失败", error)
   }
-  const keys: IconKey[] = [...TARGET_ORDER, "egern"]
+  const keys: IconKey[] = ALL_KEYS
   await Promise.all(
     keys.map(async id => {
       try {

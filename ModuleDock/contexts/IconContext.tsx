@@ -1,15 +1,13 @@
 import { createContext, useContext, useEffect, useState, type VirtualNode } from "scripting"
-import { loadIcons, type IconKey } from "../services/iconStore"
+import { initialIconPaths, loadIcons, type IconKey } from "../services/iconStore"
 
 type IconPaths = Record<IconKey, string | null>
 
-const EMPTY: IconPaths = { surge: null, loon: null, stash: null, shadowrocket: null, egern: null }
-
 const IconContext = createContext<IconPaths>()
 
-/** 启动时把四个 App 图标下载到本地，之后列表只读本地文件 */
+/** 图标路径：首帧同步读缓存，缺失的再异步补齐 */
 export function IconProvider({ children }: { children: VirtualNode }): VirtualNode {
-  const [paths, setPaths] = useState<IconPaths>(EMPTY)
+  const [paths, setPaths] = useState<IconPaths>(() => initialIconPaths())
 
   useEffect(() => {
     let alive = true
