@@ -120,9 +120,3 @@ design/AllPatternDesign  Liquid Glass、动效与 frame 令牌
 constants/               index、targets、appIcons
 types/index.ts           数据类型
 ```
-
-## 校验
-
-- TypeScript 诊断 0 项
-- Script-Hub 线上转换结果：四种目标的后缀、`#!name` / YAML `name`、`#SUBSCRIBED` 回写、目标标记往返全部通过
-- 线上页面 HTML 跑 `local-module.js`：三个本地按钮各注入 1 次，均紧跟对应远程按钮
